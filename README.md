@@ -36,9 +36,9 @@ Legend: ✅ built and verified · 🟡 built, verified only in part · ⛔ not y
 | Reality reveal (both consent, withdraw revokes) | ✅ | SQL tests; fold animation seen only structurally |
 | Graph, BFS route highlight, detail panel | ✅ demo | Browser. Live graph uses `get_graph()` (SQL-tested) |
 | Notifications + Realtime | 🟡 | Rows created in SQL tests; Realtime subscription not exercised |
-| Supabase Auth signup/login/session | ⛔ untested | Needs your Supabase project |
-| Live two-user browser test | ⛔ | Needs Supabase credentials |
-| Render deployment | ⛔ | Needs GitHub repo + Render account |
+| Supabase Auth login, session restore after reload | ✅ | Live on Render: signed in, reloaded, stayed signed in |
+| Live two-user flow on Render (match → graph → intro → reveal) | ✅ | Run by hand 2026-11-01: real match, 2-hop route from confirmed edges, intro completed after both approvals, one-button mutual reveal released real name/role/bio/LinkedIn only after both pressed |
+| Render deployment | ✅ | https://fishnet-0crx.onrender.com, SPA rewrite fixed, auto-deploys from `main` |
 | Mascot | 🟡 | Vector placeholder; swap in your art if you have it |
 
 ## Scaling notes (post-hackathon)
