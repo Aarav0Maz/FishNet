@@ -20,11 +20,20 @@ export function RevealCelebration({ c, simulated, onClose }: { c: Connection; si
   const id = c.identity ?? { name: 'Unavailable', role: '', bio: '', linkedin: '' }
   const dots = useMemo(() => [0, 1, 2], [])
 
+  // Wait until the tab is actually visible so a reveal finished in the background is not missed.
   useEffect(() => {
-    drumRoll(ROLL_MS / 1000)
-    const t1 = setTimeout(() => { setPhase('burst'); dings(3) }, ROLL_MS)
-    const t2 = setTimeout(() => { setPhase('card'); markSeen(c.id) }, ROLL_MS + 900)
-    return () => { clearTimeout(t1); clearTimeout(t2) }
+    let timers: ReturnType<typeof setTimeout>[] = []
+    const start = () => {
+      drumRoll(ROLL_MS / 1000)
+      timers = [
+        setTimeout(() => { setPhase('burst'); dings(3) }, ROLL_MS),
+        setTimeout(() => { setPhase('card'); markSeen(c.id) }, ROLL_MS + 900),
+      ]
+    }
+    const onVisible = () => { if (document.visibilityState === 'visible') { document.removeEventListener('visibilitychange', onVisible); start() } }
+    if (document.visibilityState === 'visible') start()
+    else document.addEventListener('visibilitychange', onVisible)
+    return () => { timers.forEach(clearTimeout); document.removeEventListener('visibilitychange', onVisible) }
   }, [c.id])
 
   return (
