@@ -7,6 +7,7 @@ The static site serves the app. A **Render Workflow** (`workflows/`) runs backgr
 | `refreshSuggestions` | Fans out one `suggestForUser` subtask per discoverable user (25 in parallel), each writing a "N people match your interests" alert via `jobs_suggest_for()` |
 | `expireStaleIntros(days=7)` | Expires introduction requests nobody answered and notifies the requester via `jobs_expire_stale_intros()` |
 | `runNightlyJobs` | Runs both; use this for demos or a daily cron trigger |
+| `loadTestMatching(shards, usersPerShard)` | Load test: fans out parallel `scoreShard` subtasks, each scoring every pair among synthetic profiles with the same weights as the real matcher, then reports pairs scored, best score and wall time. Synthetic data only, never real users. Try `[100, 1000]` |
 
 All tasks retry automatically (3 tries, exponential backoff). The database functions are executable only by `service_role`, so the signed-in browser can't call them.
 

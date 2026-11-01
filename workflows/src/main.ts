@@ -1,5 +1,6 @@
 import { task, type TaskContext } from "@renderinc/sdk/workflows";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import { scoreAllPairs, syntheticProfiles } from "./scoring.js";
 
 // Runs on Render Workflows. SUPABASE_SERVICE_ROLE_KEY lives only in this service's environment, never in the browser build.
 function db(): SupabaseClient {
@@ -52,5 +53,36 @@ task(
   async function runNightlyJobs(ctx: TaskContext): Promise<unknown> {
     const [sug, exp] = await Promise.all([ctx.run(refreshSuggestionsRef), ctx.run(expireStaleIntrosRef, 7)]);
     return { suggestions: sug, intros: exp };
+  },
+);
+
+/** Subtask: scores every pair in one shard of synthetic profiles. Pure compute, no database access. */
+const scoreShard = task(
+  { name: "scoreShard", retry },
+  function scoreShard(_ctx: TaskContext, seed: number, users: number): { pairs: number; best: number } {
+    const { pairs, best } = scoreAllPairs(syntheticProfiles(seed, users));
+    return { pairs, best };
+  },
+);
+
+/**
+ * Load test for the matching engine. Fans out `shards` parallel subtasks, each scoring every pair among
+ * `usersPerShard` synthetic profiles, then aggregates. Synthetic data only: it never reads or writes real users.
+ * Start with e.g. [40, 400] from the dashboard.
+ */
+task(
+  { name: "loadTestMatching", retry },
+  async function loadTestMatching(ctx: TaskContext, shards: number = 40, usersPerShard: number = 400): Promise<{ shards: number; usersPerShard: number; pairsScored: number; bestScore: number; seconds: number }> {
+    const n = Math.min(Math.max(Math.floor(shards), 1), 200);
+    const u = Math.min(Math.max(Math.floor(usersPerShard), 2), 1000);
+    const started = Date.now();
+    const results = await Promise.all(Array.from({ length: n }, (_, i) => ctx.run(scoreShard, 1000 + i, u)));
+    return {
+      shards: n,
+      usersPerShard: u,
+      pairsScored: results.reduce((sum, r) => sum + r.pairs, 0),
+      bestScore: Math.max(...results.map((r) => r.best)),
+      seconds: Math.round((Date.now() - started) / 100) / 10,
+    };
   },
 );
