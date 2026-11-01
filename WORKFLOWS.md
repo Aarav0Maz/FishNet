@@ -20,3 +20,6 @@ All tasks retry automatically (3 tries, exponential backoff). The database funct
 5. Optional: a Render Cron Job that triggers `runNightlyJobs` daily (Workflows don't schedule themselves yet).
 
 Billing is per task run by the second on the `flex` plan by default; these jobs run for seconds.
+
+## Status
+Deployed on Render as `fishnet-jobs` (Node, root `workflows/`, build `npm ci`, start `npm run start`). First run of `runNightlyJobs` on 2026-11-01 succeeded: 6.1s, suggestions for 5 users with 1 alert written.

@@ -45,7 +45,7 @@ Legend: ✅ built and verified · 🟡 built, verified only in part · ⛔ not y
 | Mascot | 🟡 | Vector placeholder; swap in your art if you have it |
 
 ## Background jobs
-See [WORKFLOWS.md](WORKFLOWS.md): a Render Workflow service runs fan-out jobs (digest alerts, stale-intro expiry) with retries.
+See [WORKFLOWS.md](WORKFLOWS.md): a Render Workflow service (`fishnet-jobs`) runs fan-out jobs (digest alerts, stale-intro expiry) with retries. Deployed and run on Render 2026-11-01: `runNightlyJobs` succeeded in 6.1s (5 users scanned, 1 digest alert written), cost about $0.00004.
 
 ## Scaling notes (post-hackathon)
 - Discovery scores candidates in SQL per request (`discover_page`). Fine for thousands of users; next step is a precomputed `match_candidates` table or a GIN-indexed tag search, refreshed on profile change.
