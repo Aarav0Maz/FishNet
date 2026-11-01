@@ -32,7 +32,7 @@ export function PathWalk({ route, step, nodes, intros, busy, onStep, onAsk, onMe
 
   return (
     <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 26 }}
-      className="absolute inset-x-3 bottom-3 z-30 mx-auto max-w-lg rounded-3xl border border-lav/30 bg-surface/95 p-4 shadow-[0_0_60px_-15px_rgba(153,92,255,.8)] backdrop-blur" role="region" aria-label="Path walk">
+      className="absolute inset-x-3 bottom-3 z-30 mx-auto max-w-lg rounded-3xl border border-lav/30 bg-surface/95 p-4 shadow-[0_0_60px_-15px_rgba(153,92,255,.8)]" role="region" aria-label="Path walk">
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-1.5" aria-label={`Stop ${step} of ${route.length - 1}`}>
           {route.slice(1).map((id, i) => <span key={id} className={`h-1.5 rounded-full transition-all ${i + 1 === step ? 'w-6 bg-accent' : i + 1 < step ? 'w-3 bg-lav/70' : 'w-3 bg-elevated'}`} />)}

@@ -27,7 +27,12 @@ export default function Network() {
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
 
   const load = useCallback(async () => {
-    try { const [g, r, i] = await Promise.all([source.graph(), source.recommendations(), source.intros()]); setGraph(g); setRecs(r); setIntros(i); setErr('') }
+    try { const [g, r, i] = await Promise.all([source.graph(), source.recommendations(), source.intros()])
+      // Keep object identity when nothing changed, so polling doesn't re-layout and re-render the whole graph.
+      setGraph((p) => (p && JSON.stringify(p) === JSON.stringify(g) ? p : g))
+      setRecs((p) => (JSON.stringify(p) === JSON.stringify(r) ? p : r))
+      setIntros((p) => (JSON.stringify(p) === JSON.stringify(i) ? p : i))
+      setErr('') }
     catch (e) { setErr(e instanceof Error ? e.message : 'Could not load network') }
   }, [source])
   useEffect(() => { void load() }, [load, version])
@@ -90,7 +95,7 @@ export default function Network() {
       {msg && walkRoute && !msg.ok && <p role="alert" className="absolute inset-x-3 bottom-72 z-30 mx-auto max-w-lg rounded-2xl bg-surface p-3 text-center text-sm text-pinky">{msg.text}</p>}
 
       {target && !walkRoute && (
-        <div className="absolute inset-x-3 bottom-3 z-20 mx-auto max-w-lg rounded-3xl border border-white/10 bg-surface/95 p-4 backdrop-blur" role="region" aria-label="Route">
+        <div className="absolute inset-x-3 bottom-3 z-20 mx-auto max-w-lg rounded-3xl border border-white/10 bg-surface/95 p-4" role="region" aria-label="Route">
           {path ? <>
             <p className="flex items-center gap-2 text-sm"><RouteIcon size={16} className="text-lav" />{path.length - 1} hop{path.length > 2 ? 's' : ''} through confirmed connections</p>
             <p className="mt-1 text-sm text-mute">{names(path).map((n, i) => <span key={i}>{i > 0 && ' → '}<span className={i === 0 ? 'text-ink' : 'text-lav'}>{n}</span></span>)}</p>
@@ -106,7 +111,7 @@ export default function Network() {
 
       <AnimatePresence>
         {(sel || selRec) && (
-          <motion.aside initial={{ x: 40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 40, opacity: 0 }} className="absolute right-3 top-14 z-20 w-72 max-w-[calc(100%-1.5rem)] rounded-3xl border border-white/10 bg-surface/95 p-5 backdrop-blur">
+          <motion.aside initial={{ x: 40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} exit={{ x: 40, opacity: 0 }} className="absolute right-3 top-14 z-20 w-72 max-w-[calc(100%-1.5rem)] rounded-3xl border border-white/10 bg-surface/95 p-5">
             <button aria-label="Close details" className="absolute right-3 top-3 text-mute hover:text-ink" onClick={() => setSelected(null)}><X size={18} /></button>
             {(() => { const p = sel?.persona ?? selRec!.persona; return <>
               <Avatar persona={p} size={56} />

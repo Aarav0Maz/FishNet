@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { memo, useEffect, useMemo, useState } from 'react'
 import { Background, Controls, Handle, Position, ReactFlow, getStraightPath, useReactFlow, type EdgeProps, type Node, type NodeProps, type Edge } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import type { Candidate, GraphData, GraphNode } from '../types'
@@ -16,7 +16,7 @@ export interface CanvasProps {
 type NData = { label: string; hue: number; degree: number; me: boolean; rec: boolean; dim: boolean; onPath: boolean; selected: boolean; revealed: boolean }
 type EData = { dim: boolean; onPath: boolean; rec: boolean }
 
-function FNode({ data }: NodeProps<Node<NData>>) {
+const FNode = memo(function FNode({ data }: NodeProps<Node<NData>>) {
   const size = data.me ? 72 : data.degree === 1 ? 56 : 44
   return (
     <div className="flex flex-col items-center gap-1 transition-opacity duration-500" style={{ opacity: data.dim ? 0.18 : 1 }}>
@@ -31,14 +31,14 @@ function FNode({ data }: NodeProps<Node<NData>>) {
       <span className="max-w-28 truncate text-center text-xs font-medium text-ink/90">{data.revealed ? `✦ ${data.label}` : data.label}</span>
     </div>
   )
-}
+})
 
-function FEdge({ id, sourceX, sourceY, targetX, targetY, data }: EdgeProps<Edge<EData>>) {
+const FEdge = memo(function FEdge({ id, sourceX, sourceY, targetX, targetY, data }: EdgeProps<Edge<EData>>) {
   const [d] = getStraightPath({ sourceX, sourceY, targetX, targetY })
   const s = data!
   return <path id={id} d={d} pathLength={1} fill="none" className={`fn-edge ${s.rec ? 'rec' : ''}`}
     style={{ stroke: s.onPath ? '#C9A7FF' : s.rec ? '#8a7aa8' : '#995CFF', strokeWidth: s.onPath ? 3.5 : 1.6, opacity: s.dim ? 0.08 : s.rec ? 0.55 : s.onPath ? 1 : 0.6, transition: 'opacity .5s, stroke-width .3s' }} />
-}
+})
 const nodeTypes = { fn: FNode }
 const edgeTypes = { fn: FEdge }
 
@@ -125,7 +125,7 @@ export default function GraphCanvas({ graph, recs, meId, path, selected, focus, 
   return (
     <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes}
       minZoom={0.15} maxZoom={2} nodesDraggable={false} nodesConnectable={false} proOptions={{ hideAttribution: true }}
-      onNodeClick={(_, n) => onSelect(n.id)} onPaneClick={() => onSelect(null)} colorMode="dark">
+      onlyRenderVisibleElements onNodeClick={(_, n) => onSelect(n.id)} onPaneClick={() => onSelect(null)} colorMode="dark">
       <FitRoute path={focus ?? path} count={placed.size} />
       <Background color="#2a2140" gap={32} />
       <Controls showInteractive={false} />

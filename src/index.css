@@ -32,7 +32,7 @@ body { background: var(--color-bg); color: var(--color-ink); font-family: var(--
 
 /* React Flow */
 .react-flow { background: transparent !important; }
-.react-flow__node { transition: transform .9s var(--ease), opacity .4s; }
+.react-flow__node { transition: transform .9s var(--ease), opacity .4s; will-change: transform; contain: layout style; }
 .react-flow__node.dragging { transition: none; }
 .fn-edge { pathLength: 1; stroke-dasharray: 1; animation: draw 1.1s var(--ease) both; }
 .fn-edge.rec { stroke-dasharray: .02 .02; animation: none; }
