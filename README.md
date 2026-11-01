@@ -1,0 +1,44 @@
+# FishNet
+
+*Come for the fake status. Leave with real connections.*
+
+Invent a fictional professional persona, swipe to discover people, match for real, map your network, ask for introductions along real routes, and optionally reveal your real identity once **both** sides consent.
+
+Stack: React + Vite + TypeScript (strict) · Tailwind · React Router · Motion · React Flow · Supabase (Auth, Postgres, RLS, Realtime) · Render static site.
+
+## Run locally
+```bash
+npm install
+cp .env.example .env     # add your Supabase URL + anon key (optional for demo mode)
+npm run dev
+npm test                 # unit tests + migration tests (runs the real SQL in an in-process Postgres)
+npm run build
+```
+Demo mode (`/demo`) works with no credentials. Real accounts need the Supabase setup in [DEPLOYMENT.md](DEPLOYMENT.md).
+
+## Architecture
+- `src/types.ts` — `DataSource` interface; the UI is identical for demo and live.
+- `src/data/demo.ts` — in-memory demo world (24 fictional users); every "other side" action is simulated and labelled.
+- `src/data/supabase.ts` — live source; all cross-user reads/writes go through `SECURITY DEFINER` RPCs that check `auth.uid()`.
+- `src/lib/graph.ts` — BFS shortest path and deterministic match score (shared by demo and live; score mirrored in SQL).
+- `supabase/migrations/0001_fishnet.sql` — tables, RLS, indexes, RPCs. Real identity lives in `private_identity`, readable only by its owner; the other party receives it only from `get_connections()` after both consent rows exist.
+
+## Feature status
+Legend: ✅ built and verified · 🟡 built, verified only in part · ⛔ not yet done
+
+| Feature | Status | Verified how |
+|---|---|---|
+| Demo mode (persona, swipe, simulated match, graph, route, intro, reveal) | ✅ | Walked in browser; route + intro request exercised |
+| Swipe deck (drag, keys, buttons, pending lock, pagination, empty/error states) | 🟡 | Keyboard + match flow seen in browser; touch drag not tested on a device |
+| Mutual match, atomic, exactly one connection | ✅ | SQL tests (idempotent repeat swipes, advisory lock). Parallel-transaction race not load-tested |
+| RLS / privacy of real identity | ✅ | SQL tests as `authenticated`/`anon` roles |
+| Introductions (intermediary then target approval) | ✅ | SQL tests incl. forbidden shortcuts |
+| Reality reveal (both consent, withdraw revokes) | ✅ | SQL tests; fold animation seen only structurally |
+| Graph, BFS route highlight, detail panel | ✅ demo | Browser. Live graph uses `get_graph()` (SQL-tested) |
+| Notifications + Realtime | 🟡 | Rows created in SQL tests; Realtime subscription not exercised |
+| Supabase Auth signup/login/session | ⛔ untested | Needs your Supabase project |
+| Live two-user browser test | ⛔ | Needs Supabase credentials |
+| Render deployment | ⛔ | Needs GitHub repo + Render account |
+| Mascot | 🟡 | Vector placeholder; swap in your art if you have it |
+
+Known limits: free-tier Supabase/Render only, no capacity claims; graph shows up to 3 hops, capped at 60 nodes per ring.
