@@ -31,11 +31,12 @@ beforeAll(async () => {
   await db.exec(`
     create schema auth; create table auth.users(id uuid primary key);
     create function auth.uid() returns uuid language sql stable as $$ select nullif(current_setting('request.jwt.claim.sub', true), '')::uuid $$;
-    create role anon; create role authenticated;
-    grant usage on schema public, auth to anon, authenticated; grant execute on function auth.uid() to anon, authenticated;
+    create role anon; create role authenticated; create role service_role;
+    grant usage on schema public, auth to anon, authenticated, service_role; grant execute on function auth.uid() to anon, authenticated;
     create publication supabase_realtime;`)
   await db.exec(readFileSync(new URL('./migrations/0001_fishnet.sql', import.meta.url), 'utf8'))
-  await db.exec('grant usage on schema public to anon, authenticated')
+  await db.exec(readFileSync(new URL('./migrations/0002_jobs.sql', import.meta.url), 'utf8'))
+  await db.exec('grant usage on schema public to anon, authenticated, service_role')
   await signup(A, 'A', [['design'], ['ai', 'climate'], ['cofounder']])
   await signup(B, 'B', [['ai'], ['design'], ['cofounder']])
   await signup(C, 'C', [[], ['gaming'], []])
@@ -114,5 +115,33 @@ describe('FishNet database', () => {
   it('users only read their own notifications', async () => {
     await as(D)
     expect((await db.query('select * from notifications')).rows).toHaveLength(0)
+  })
+})
+
+describe('Render Workflows job functions', () => {
+  const asService = async () => { await db.exec('reset role'); await db.exec('set role service_role') }
+  it('are not callable by signed-in users', async () => {
+    await as(A)
+    await expect(db.query('select jobs_suggest_for($1)', [A])).rejects.toThrow()
+    await expect(db.query('select jobs_expire_stale_intros(7)')).rejects.toThrow()
+  })
+  it('suggest: counts unseen relevant people and writes a single unread digest', async () => {
+    await asService()
+    const n = (await db.query<{ jobs_suggest_for: number }>('select jobs_suggest_for($1)', [D])).rows[0].jobs_suggest_for
+    expect(n).toBeGreaterThanOrEqual(1)
+    await db.query('select jobs_suggest_for($1)', [D]) // idempotent while unread
+    await as(D)
+    expect((await db.query<{ n: number }>("select count(*)::int n from notifications where kind='digest'")).rows[0].n).toBe(1)
+  })
+  it('expire: only old pending intros are expired and the requester is told', async () => {
+    await db.exec('reset role')
+    await db.query("update intro_requests set status='pending_via', created_at = now() - interval '10 days'")
+    await db.query("insert into intro_requests(requester,via,target,status) values ($1,$2,$3,'pending_via')", [C, B, A])
+    await asService()
+    const ids = (await db.query('select jobs_expire_stale_intros(7)')).rows
+    expect(ids).toHaveLength(1)
+    await db.exec('reset role')
+    const st = (await db.query<{ status: string }>('select status from intro_requests order by created_at')).rows.map((r) => r.status)
+    expect(st).toEqual(['expired', 'pending_via'])
   })
 })

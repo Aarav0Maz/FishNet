@@ -3,7 +3,7 @@ import { useWorkspace } from '../workspace'
 import type { IntroRequest, IntroStatus } from '../types'
 import { useRevealedNames } from '../lib/useRevealedNames'
 
-const label: Record<IntroStatus, string> = { pending_via: 'Waiting for the intermediary', pending_target: 'Waiting for the target to approve', completed: 'Introduction completed', declined: 'Declined' }
+const label: Record<IntroStatus, string> = { pending_via: 'Waiting for the intermediary', pending_target: 'Waiting for the target to approve', completed: 'Introduction completed', declined: 'Declined', expired: 'Expired: nobody answered in time' }
 
 export default function Intros() {
   const { source, version, bump } = useWorkspace()

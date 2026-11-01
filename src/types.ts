@@ -9,13 +9,13 @@ export type RevealState = 'none' | 'requested_by_me' | 'requested_of_me' | 'reve
 export interface Connection { id: string; otherId: string; persona: Persona; tags: Tags; since: string; reveal: RevealState; identity?: RealIdentity }
 export interface GraphNode { id: string; persona: Persona; degree: number; revealedName?: string }
 export interface GraphData { nodes: GraphNode[]; edges: [string, string][] }
-export type IntroStatus = 'pending_via' | 'pending_target' | 'completed' | 'declined'
+export type IntroStatus = 'pending_via' | 'pending_target' | 'completed' | 'declined' | 'expired'
 export interface IntroRequest {
   id: string; requesterId: string; viaId: string; targetId: string; note: string; status: IntroStatus; createdAt: string
   names: { requester: string; via: string; target: string }
   myRole: 'requester' | 'via' | 'target'
 }
-export type NoticeKind = 'match' | 'intro_request' | 'intro_accepted' | 'intro_declined' | 'intro_forwarded' | 'reveal_request' | 'reveal_approved'
+export type NoticeKind = 'match' | 'intro_request' | 'intro_accepted' | 'intro_declined' | 'intro_forwarded' | 'reveal_request' | 'reveal_approved' | 'digest' | 'intro_expired'
 export interface Notice { id: string; kind: NoticeKind; name: string; read: boolean; createdAt: string; simulated?: boolean }
 
 export interface DataSource {

@@ -41,6 +41,9 @@ Legend: ✅ built and verified · 🟡 built, verified only in part · ⛔ not y
 | Render deployment | ✅ | https://fishnet-0crx.onrender.com, SPA rewrite fixed, auto-deploys from `main` |
 | Mascot | 🟡 | Vector placeholder; swap in your art if you have it |
 
+## Background jobs
+See [WORKFLOWS.md](WORKFLOWS.md): a Render Workflow service runs fan-out jobs (digest alerts, stale-intro expiry) with retries.
+
 ## Scaling notes (post-hackathon)
 - Discovery scores candidates in SQL per request (`discover_page`). Fine for thousands of users; next step is a precomputed `match_candidates` table or a GIN-indexed tag search, refreshed on profile change.
 - Graph reads are bounded (3 hops, 60 nodes per ring) and server-filtered by privacy settings.
