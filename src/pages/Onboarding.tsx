@@ -26,7 +26,7 @@ export default function Onboarding() {
   const [settings, setSettings] = useState(me?.settings ?? { discoverable: true, showInGraph: true })
 
   const pick = (k: string) => { setTpl(k); setPersona(rollPersona(k, persona.hue)) }
-  const canNext = step === 1 ? real.name.trim() && real.role.trim() && parseTags(interests).length > 0 : step === 0 ? persona.name.trim() && persona.title.trim() && persona.company.trim() : true
+  const canNext = step === 1 ? real.name.trim() && parseTags(interests).length > 0 : step === 0 ? persona.name.trim() && persona.title.trim() && persona.company.trim() : true
 
   async function finish() {
     if (busy) return
@@ -50,7 +50,7 @@ export default function Onboarding() {
           {step === 1 && <>
             <p className="text-sm text-mute">Your real details stay private. Others only see them if you both approve a reveal.</p>
             <F label="Your name"><input className="field" value={real.name} maxLength={80} onChange={(e) => setReal({ ...real, name: e.target.value })} /></F>
-            <F label="Role or education"><input className="field" value={real.role} maxLength={120} placeholder="e.g. CS student at UofT" onChange={(e) => setReal({ ...real, role: e.target.value })} /></F>
+            <F label="Role or education (optional)"><input className="field" value={real.role} maxLength={120} placeholder="e.g. CS student at UofT" onChange={(e) => setReal({ ...real, role: e.target.value })} /></F>
             <F label="Short bio"><textarea className="field" rows={2} maxLength={500} value={real.bio} onChange={(e) => setReal({ ...real, bio: e.target.value })} /></F>
             <F label="Skills (comma separated)"><input className="field" value={skills} placeholder="Design, React, Finance" onChange={(e) => setSkills(e.target.value)} /></F>
             <F label="Professional interests (comma separated)"><input className="field" value={interests} placeholder="AI, Climate, Gaming" onChange={(e) => setInterests(e.target.value)} /></F>

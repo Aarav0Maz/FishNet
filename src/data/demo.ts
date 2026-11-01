@@ -14,6 +14,7 @@ export function createDemoSource(): DataSource {
   const edges: [string, string][] = DEMO_EDGES.map(([a, b]) => [DEMO_USERS[a].id, DEMO_USERS[b].id])
   for (const i of DEMO_START_CONNECTIONS) edges.push([DEMO_ME, DEMO_USERS[i].id])
   const swiped = new Set<string>()
+  let likes = 0
   const reveal = new Map<string, RevealState>()
   let intros: IntroRequest[] = []
   let notices: Notice[] = []
@@ -44,7 +45,9 @@ export function createDemoSource(): DataSource {
     async swipe(id, dir) {
       await wait(150)
       swiped.add(id)
-      if (dir === 'like' && likesBack(id) && !connected(DEMO_ME, id)) {
+      if (dir === 'like') likes++
+      // The first like always matches so the demo never dead-ends; after that it is deterministic.
+      if (dir === 'like' && (likes === 1 || likesBack(id)) && !connected(DEMO_ME, id)) {
         edges.push([DEMO_ME, id])
         notify('match', nameOf(id))
         return { matched: true }

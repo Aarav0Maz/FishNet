@@ -1,5 +1,5 @@
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
-import { Bell, Compass, Handshake, Network, Send, LogOut, Volume2, VolumeX } from 'lucide-react'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Bell, Compass, Handshake, Network, Send, LogOut, Volume2, VolumeX, Pencil } from 'lucide-react'
 import { useState } from 'react'
 import { useWorkspace } from '../workspace'
 import { setSound, soundEnabled } from '../lib/sound'
@@ -8,6 +8,8 @@ import { supabase } from '../data/supabase'
 export function Shell() {
   const { base, source, unread, me } = useWorkspace()
   const nav = useNavigate()
+  const { pathname } = useLocation()
+  const hint = ({ discover: 'Swipe right (→) to match', network: 'Pick a far target to see the route', matches: 'Request a reality reveal', intros: 'Responses arrive in a few seconds', inbox: 'Alerts appear as things happen' } as Record<string, string>)[pathname.split('/')[2] ?? ''] ?? ''
   const [snd, setSnd] = useState(soundEnabled())
   const items = [
     { to: 'discover', icon: Compass, label: 'Discover' },
@@ -22,7 +24,7 @@ export function Shell() {
     <div className="flex h-full flex-col md:flex-row">
       {source.kind === 'demo' && (
         <div className="fixed inset-x-0 top-0 z-50 bg-pinky/90 py-1 text-center text-xs font-medium text-bg">
-          DEMO MODE · simulated data, nothing is saved or sent to real users
+          DEMO MODE · simulated, nothing saved{hint && <span className="hidden sm:inline"> · {hint}</span>}
         </div>
       )}
       <aside className="hidden w-60 shrink-0 flex-col border-r border-white/5 p-5 pt-10 md:flex">
@@ -31,7 +33,8 @@ export function Shell() {
           {items.map((i) => <NavLink key={i.to} to={`${base}/${i.to}`} className={link}><i.icon size={18} />{i.label}{!!i.badge && <Badge n={i.badge} />}</NavLink>)}
         </nav>
         <div className="mt-auto space-y-2 text-sm text-mute">
-          {me && <p className="truncate px-4">{me.persona.name}</p>}
+          {me && <p className="truncate px-4" title="Your fictional persona">Playing: {me.persona.name}</p>}
+          <button className="flex items-center gap-3 px-4 py-2 hover:text-ink" onClick={() => nav(`${base}/onboarding`)}><Pencil size={16} />Edit persona</button>
           <button className="flex items-center gap-3 px-4 py-2 hover:text-ink" onClick={() => { setSound(!snd); setSnd(!snd) }} aria-pressed={snd}>
             {snd ? <Volume2 size={16} /> : <VolumeX size={16} />}Sound {snd ? 'on' : 'off'}
           </button>

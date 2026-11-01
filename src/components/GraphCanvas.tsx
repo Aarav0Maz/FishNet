@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Background, Controls, Handle, Position, ReactFlow, getStraightPath, type EdgeProps, type Node, type NodeProps, type Edge } from '@xyflow/react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Background, Controls, Handle, Position, ReactFlow, getStraightPath, useReactFlow, type EdgeProps, type Node, type NodeProps, type Edge } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import type { Candidate, GraphData, GraphNode } from '../types'
 import { orb, initials } from './PersonaCard'
@@ -67,6 +67,17 @@ function layout(nodes: GraphNode[], edges: [string, string][], recs: Candidate[]
   return pos
 }
 
+/** Glides the camera to the active route, and back out when it is cleared. */
+function FitRoute({ path }: { path: string[] | null }) {
+  const rf = useReactFlow()
+  const had = useRef(false)
+  useEffect(() => {
+    if (path && path.length > 1) { had.current = true; void rf.fitView({ nodes: path.map((id) => ({ id })), duration: 700, padding: 0.5 }) }
+    else if (had.current) { had.current = false; void rf.fitView({ duration: 600, padding: 0.15 }) }
+  }, [path, rf])
+  return null
+}
+
 export default function GraphCanvas({ graph, recs, meId, path, selected, onSelect }: CanvasProps) {
   const targets = useMemo(() => layout(graph.nodes, graph.edges, recs), [graph, recs])
   const [placed, setPlaced] = useState<Set<string>>(new Set())
@@ -110,6 +121,7 @@ export default function GraphCanvas({ graph, recs, meId, path, selected, onSelec
     <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} fitView fitViewOptions={{ padding: 0.15 }}
       minZoom={0.15} maxZoom={2} nodesDraggable={false} nodesConnectable={false} proOptions={{ hideAttribution: true }}
       onNodeClick={(_, n) => onSelect(n.id)} onPaneClick={() => onSelect(null)} colorMode="dark">
+      <FitRoute path={path} />
       <Background color="#2a2140" gap={32} />
       <Controls showInteractive={false} />
     </ReactFlow>

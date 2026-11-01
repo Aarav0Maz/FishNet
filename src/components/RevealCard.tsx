@@ -37,7 +37,8 @@ export function RevealCard({ c, simulated }: { c: Connection; simulated: boolean
             </div>
             {id.bio && <p className="mt-3 text-sm text-mute">{id.bio}</p>}
             {id.linkedin && /^https?:\/\//.test(id.linkedin) && <a className="mt-3 inline-flex items-center gap-1 text-sm text-lav underline" href={id.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn <ExternalLink size={13} /></a>}
-            <p className="mt-3 text-xs text-mute">{simulated ? 'Simulated reveal (demo mode). ' : 'Real identity, shared with mutual consent. '}Persona was {c.persona.name}.</p>
+            <p className="display mt-3 text-sm text-lav">The persona was fictional. The connection is real.</p>
+            <p className="mt-1 text-xs text-mute">{simulated ? 'Simulated reveal (demo mode). ' : 'Real identity, shared with mutual consent. '}Persona was {c.persona.name}.</p>
             <button className="mt-2 text-xs text-mute underline" onClick={() => { setReal(false); setRun((r) => r + 1) }}>Replay</button>
           </motion.div>
         )}

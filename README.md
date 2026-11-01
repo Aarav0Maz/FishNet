@@ -28,7 +28,7 @@ Legend: ✅ built and verified · 🟡 built, verified only in part · ⛔ not y
 
 | Feature | Status | Verified how |
 |---|---|---|
-| Demo mode (persona, swipe, simulated match, graph, route, intro, reveal) | ✅ | Walked in browser; route + intro request exercised |
+| Demo mode (one-click start, simulated match, graph, route, intro, reveal) | ✅ | Walked in browser; first like always matches |
 | Swipe deck (drag, keys, buttons, pending lock, pagination, empty/error states) | 🟡 | Keyboard + match flow seen in browser; touch drag not tested on a device |
 | Mutual match, atomic, exactly one connection | ✅ | SQL tests (idempotent repeat swipes, advisory lock). Parallel-transaction race not load-tested |
 | RLS / privacy of real identity | ✅ | SQL tests as `authenticated`/`anon` roles |
@@ -40,5 +40,11 @@ Legend: ✅ built and verified · 🟡 built, verified only in part · ⛔ not y
 | Live two-user browser test | ⛔ | Needs Supabase credentials |
 | Render deployment | ⛔ | Needs GitHub repo + Render account |
 | Mascot | 🟡 | Vector placeholder; swap in your art if you have it |
+
+## Scaling notes (post-hackathon)
+- Discovery scores candidates in SQL per request (`discover_page`). Fine for thousands of users; next step is a precomputed `match_candidates` table or a GIN-indexed tag search, refreshed on profile change.
+- Graph reads are bounded (3 hops, 60 nodes per ring) and server-filtered by privacy settings.
+- Swipe/match is one transaction guarded by an advisory lock per pair; connections are unique on an ordered pair.
+- Add rate limiting (Supabase Edge or pg) before opening signups publicly, plus report/block and moderation for personas.
 
 Known limits: free-tier Supabase/Render only, no capacity claims; graph shows up to 3 hops, capped at 60 nodes per ring.

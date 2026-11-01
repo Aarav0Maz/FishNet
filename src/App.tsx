@@ -1,5 +1,7 @@
-import { lazy, Suspense, useMemo, type ReactNode } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { lazy, Suspense, useEffect, useMemo, type ReactNode } from 'react'
+import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
+import { rollPersona } from './lib/persona'
+import { TEMPLATE_KEYS } from './types'
 import { useAuth } from './auth'
 import { createDemoSource } from './data/demo'
 import { createLiveSource, liveConfigured } from './data/supabase'
@@ -16,10 +18,32 @@ import Inbox from './pages/Inbox'
 const Network = lazy(() => import('./pages/Network'))
 const Loading = () => <div className="grid h-full place-items-center text-mute" role="status">Loading…</div>
 
+const entry = (base: string) => (base === '/demo' ? `${base}/start` : `${base}/onboarding`)
+
+/** Demo quick start: a ready-made persona so a first-time visitor reaches the swipe deck in one click. */
+function DemoStart() {
+  const { source, setMe, base } = useWorkspace()
+  const nav = useNavigate()
+  useEffect(() => {
+    let live = true
+    void (async () => {
+      const m = (await source.getMe()) ?? (await source.saveMe({
+        persona: rollPersona(TEMPLATE_KEYS[Math.floor(Math.random() * TEMPLATE_KEYS.length)]),
+        real: { name: 'Demo Visitor', role: 'Hackathon judge', bio: 'Fictional demo identity.', linkedin: '' },
+        tags: { skills: ['Strategy'], interests: ['AI', 'Climate', 'Design'], goals: ['Find cofounder'] },
+        settings: { discoverable: true, showInGraph: true },
+      }))
+      if (live) { setMe(m); nav(`${base}/discover`, { replace: true }) }
+    })()
+    return () => { live = false }
+  }, [source, setMe, nav, base])
+  return <Loading />
+}
+
 function Gate({ children }: { children: ReactNode }) {
   const { me, ready, base } = useWorkspace()
   if (!ready) return <Loading />
-  if (!me) return <Navigate to={`${base}/onboarding`} replace />
+  if (!me) return <Navigate to={entry(base)} replace />
   return <>{children}</>
 }
 
@@ -30,6 +54,7 @@ function WorkspaceRoutes() {
     <Suspense fallback={<Loading />}>
       <Routes>
         <Route path="onboarding" element={<Onboarding />} />
+        {base === '/demo' && <Route path="start" element={<DemoStart />} />}
         <Route element={<Gate><Shell /></Gate>}>
           <Route path="discover" element={<Discover />} />
           <Route path="network" element={<Network />} />
@@ -37,7 +62,7 @@ function WorkspaceRoutes() {
           <Route path="intros" element={<Intros />} />
           <Route path="inbox" element={<Inbox />} />
         </Route>
-        <Route path="*" element={<Navigate to={me ? `${base}/discover` : `${base}/onboarding`} replace />} />
+        <Route path="*" element={<Navigate to={me ? `${base}/discover` : entry(base)} replace />} />
       </Routes>
     </Suspense>
   )
