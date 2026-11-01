@@ -161,13 +161,14 @@ Tags are merged through a canonical taxonomy before saving, so `ML`, `machine le
 
 <br/>
 
-A Render Workflow (`workflows/`) runs jobs off the request path, with automatic retries:
+**Where things run:** the app is a Render static site. The real matching (`discover_page`, `swipe`) runs inside Supabase Postgres. A Render Workflow (`workflows/`, service `fishnet-jobs`) runs background work off the request path, with automatic retries:
 
-- **`refreshSuggestions`** fans out one `suggestForUser` subtask per discoverable user, 25 at a time in parallel, each writing a "people match your interests" alert.
+- **`refreshSuggestions`** fans out one `suggestForUser` subtask per discoverable user, 25 at a time in parallel. Each asks the database to score that user's candidates and write a "people match your interests" alert.
 - **`expireStaleIntros`** closes introduction requests nobody answered within 7 days and tells the requester.
 - **`runNightlyJobs`** runs both.
+- **`loadTestMatching(shards, usersPerShard)`** is a load test of the scoring formula: it fans out parallel `scoreShard` tasks, each scoring every pair among synthetic profiles with the same weights as the real matcher. Synthetic data only, never real users. A deployed run of `[100, 1000]` (about 50 million pairs) succeeded in 1 min 23 s for about $0.0002; Render queues tasks beyond its concurrency limit.
 
-The job functions are executable only by the database's service role. First deployed run: succeeded in about 6 seconds. See [WORKFLOWS.md](WORKFLOWS.md).
+The job functions are executable only by the database's service role, and the service-role key lives only on the Workflow service. See [WORKFLOWS.md](WORKFLOWS.md).
 
 </details>
 
@@ -200,7 +201,7 @@ Off by default, opt-in, and synthesized live with WebAudio (no audio files). Eve
 | Tag taxonomy and tag picker | ✅ | 13 unit tests plus browser |
 | Party codes and Settings | 🟡 | SQL-tested; saving verified live; two-account filtering not yet |
 | Render static site | ✅ | https://fishnet-0crx.onrender.com |
-| Render Workflow | ✅ | Deployed; `runNightlyJobs` succeeded |
+| Render Workflow (suggestions, expiry, parallel load test) | ✅ | Deployed; `runNightlyJobs` and `loadTestMatching [100, 1000]` both succeeded |
 | Sound | 🟡 | Runs without errors; not heard by the author |
 | Realtime subscriptions | 🟡 | Wired; polling fallback in place |
 
@@ -229,7 +230,7 @@ To run the live app, create a Supabase project and apply `supabase/migrations/00
 
 ```
 src/
-  pages/            Landing, Auth, Onboarding, Discover (Encounters), Network, Matches, Chat, Intros, Inbox, Settings
+  pages/            Landing, Auth, Onboarding, Discover (Encounters), Network (Quest map), Matches, Chat, Intros, Inbox, Settings
   components/       SwipeDeck pieces, GraphCanvas, PathWalk, RevealCelebration, TagPicker, Mascot, ...
   data/             demo.ts (simulated world), supabase.ts (live), demoSeed.ts
   lib/              graph.ts (BFS and score), tags.ts (taxonomy), starters.ts, sound.ts, persona.ts
