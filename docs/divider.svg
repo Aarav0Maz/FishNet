@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 24" width="1200" height="24" role="presentation">
+  <defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#995CFF" stop-opacity="0"/><stop offset=".5" stop-color="#C9A7FF"/><stop offset="1" stop-color="#F3B4DE" stop-opacity="0"/></linearGradient></defs>
+  <style>.w{animation:slide 5s linear infinite}@keyframes slide{to{transform:translateX(-200px)}}@media (prefers-reduced-motion: reduce){.w{animation:none}}</style>
+  <path class="w" d="M0 12 q50 -14 100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0 t100 0" fill="none" stroke="url(#g)" stroke-width="2"/>
+</svg>

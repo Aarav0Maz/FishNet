@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" width="1200" height="360" role="img" aria-label="FishNet. Come for the fake status. Leave with real connections.">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0B0912"/><stop offset="1" stop-color="#1a1230"/></linearGradient>
+    <linearGradient id="fb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C9A7FF"/><stop offset="1" stop-color="#995CFF"/></linearGradient>
+    <linearGradient id="ttl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F7F4FF"/><stop offset="1" stop-color="#C9A7FF"/></linearGradient>
+    <radialGradient id="orb1"><stop offset="0" stop-color="#995CFF" stop-opacity=".55"/><stop offset="1" stop-color="#995CFF" stop-opacity="0"/></radialGradient>
+    <radialGradient id="orb2"><stop offset="0" stop-color="#F3B4DE" stop-opacity=".30"/><stop offset="1" stop-color="#F3B4DE" stop-opacity="0"/></radialGradient>
+    <clipPath id="reveal"><rect class="wipe" x="0" y="0" width="720" height="360"/></clipPath>
+  </defs>
+  <style>
+    .orb1{animation:drift1 9s ease-in-out infinite alternate}
+    .orb2{animation:drift2 11s ease-in-out infinite alternate}
+    .fish{animation:bob 4.5s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+    .wipe{animation:wipe 1.6s cubic-bezier(.22,1,.36,1) both}
+    .tag{animation:rise 1s .9s both ease-out}
+    .pill{animation:rise 1s 1.3s both ease-out}
+    .b{animation:float 6s linear infinite;opacity:0}
+    .b2{animation-delay:1.3s}.b3{animation-delay:2.6s}.b4{animation-delay:3.9s}.b5{animation-delay:5.1s}
+    .glint{animation:glint 3.2s 1.8s ease-in-out infinite}
+    @keyframes drift1{to{transform:translate(120px,40px)}}
+    @keyframes drift2{to{transform:translate(-100px,-30px)}}
+    @keyframes bob{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-14px) rotate(2deg)}}
+    @keyframes wipe{from{transform:translateX(-720px)}to{transform:translateX(0)}}
+    @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes float{0%{transform:translateY(0);opacity:0}15%{opacity:.7}100%{transform:translateY(-330px);opacity:0}}
+    @keyframes glint{0%,100%{opacity:.0}50%{opacity:.9}}
+    @media (prefers-reduced-motion: reduce){*{animation:none!important;opacity:1!important}}
+  </style>
+  <rect width="1200" height="360" fill="url(#bg)"/>
+  <circle class="orb1" cx="260" cy="120" r="260" fill="url(#orb1)"/>
+  <circle class="orb2" cx="900" cy="260" r="240" fill="url(#orb2)"/>
+
+  <g fill="none" stroke="#C9A7FF" stroke-width="2">
+    <circle class="b" cx="760" cy="340" r="6"/><circle class="b b2" cx="830" cy="350" r="4"/>
+    <circle class="b b3" cx="1120" cy="345" r="7"/><circle class="b b4" cx="1060" cy="352" r="4"/><circle class="b b5" cx="700" cy="348" r="5"/>
+  </g>
+
+  <g clip-path="url(#reveal)">
+    <text x="64" y="188" font-family="Georgia, 'Times New Roman', serif" font-size="108" letter-spacing="-3" fill="url(#ttl)">Fish<tspan fill="#995CFF">Net</tspan></text>
+  </g>
+  <text class="tag" x="68" y="240" font-family="Georgia, 'Times New Roman', serif" font-size="30" font-style="italic" fill="#C9A7FF">Come for the fake status. <tspan fill="#F3B4DE">Leave with real connections.</tspan></text>
+  <g class="pill" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif" font-size="15" fill="#A7A0B5">
+    <rect x="64" y="272" width="380" height="36" rx="18" fill="#21192E"/>
+    <text x="86" y="295">A role-playing game for real networking</text>
+  </g>
+
+  <g transform="translate(880 80)"><g class="fish">
+    <circle cx="100" cy="100" r="150" fill="url(#orb1)" opacity=".7"/>
+    <path d="M150 100 C168 78 182 70 190 62 C186 88 186 112 190 138 C182 130 168 122 150 100Z" fill="#995CFF"/>
+    <path d="M92 52 C100 30 120 28 130 40 C116 42 106 48 100 58Z" fill="#F3B4DE"/>
+    <path d="M96 138 C104 158 122 162 132 152 C120 150 110 144 106 134Z" fill="#F3B4DE"/>
+    <path d="M20 100 C20 62 58 42 98 44 C132 46 156 72 156 100 C156 128 132 154 98 156 C58 158 20 138 20 100Z" fill="url(#fb)"/>
+    <path d="M40 112 C70 132 110 136 142 116 C130 140 98 152 66 146 C50 142 42 130 40 112Z" fill="#F7F4FF" opacity=".28"/>
+    <rect x="44" y="76" width="64" height="24" rx="12" fill="#0B0912"/>
+    <path class="glint" d="M52 84h22" stroke="#995CFF" stroke-width="3" stroke-linecap="round"/>
+    <path d="M46 122 Q70 130 96 116 L102 108" stroke="#0B0912" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="104" cy="104" r="7" fill="#F3B4DE" opacity=".55"/>
+  </g></g>
+</svg>
