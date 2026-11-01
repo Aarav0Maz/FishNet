@@ -32,7 +32,7 @@ https://github.com/Aarav0Maz/FishNet
 Overall, and Render.
 
 **Render track: how it uses Render**
-The app is a Render static site that deploys from GitHub on every push. A Render Workflow service (`fishnet-jobs`) runs background jobs: one task per user in parallel with automatic retries, to write personalised suggestion alerts and expire introduction requests nobody answered. First deployed run succeeded in about 6 seconds. Supabase provides auth and the database.
+The app is a Render static site that deploys from GitHub on every push. A Render Workflow service (`fishnet-jobs`) runs background jobs: one task per user in parallel with automatic retries, to write personalised suggestion alerts and expire introduction requests nobody answered. The Workflow has six tasks, including a parallel load test of the matching engine (100 tasks scoring about 50 million synthetic candidate pairs, about $0.0002). Supabase provides auth and the database.
 
 **Built with**
 React, TypeScript, Vite, Tailwind CSS, Motion, React Flow, Supabase (Auth, Postgres, Row Level Security, Realtime), Render (Static Site and Workflows), WebAudio.
