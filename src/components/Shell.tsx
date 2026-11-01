@@ -1,4 +1,5 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { motion, useReducedMotion } from 'motion/react'
 import { Bell, Compass, Handshake, Network, Send, LogOut, Pencil } from 'lucide-react'
 import { useWorkspace } from '../workspace'
 import { SoundToggle } from './SoundToggle'
@@ -8,6 +9,7 @@ export function Shell() {
   const { base, source, unread, me } = useWorkspace()
   const nav = useNavigate()
   const { pathname } = useLocation()
+  const reduce = useReducedMotion()
   const hint = ({ discover: 'Swipe right (→) to match', network: 'Pick a far target to see the route', matches: 'Message a match, then reveal', intros: 'Responses arrive in a few seconds', inbox: 'Alerts appear as things happen' } as Record<string, string>)[pathname.split('/')[2] ?? ''] ?? ''
   const items = [
     { to: 'discover', icon: Compass, label: 'Discover' },
@@ -40,7 +42,9 @@ export function Shell() {
           </button>
         </div>
       </aside>
-      <main className="min-h-0 flex-1 overflow-y-auto pb-24 pt-8 md:pb-0"><Outlet /></main>
+      <main className="min-h-0 flex-1 overflow-y-auto pb-24 pt-8 md:pb-0">
+        <motion.div key={pathname} className="h-full" initial={reduce ? false : { opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}><Outlet /></motion.div>
+      </main>
       <nav className="fixed inset-x-0 bottom-0 z-40 flex justify-around border-t border-white/5 bg-bg/90 px-2 pb-[max(.5rem,env(safe-area-inset-bottom))] pt-2 backdrop-blur md:hidden">
         {items.map((i) => <NavLink key={i.to} to={`${base}/${i.to}`} className={link} aria-label={i.label}><i.icon size={20} />{i.label}{!!i.badge && <Badge n={i.badge} />}</NavLink>)}
       </nav>

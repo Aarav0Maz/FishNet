@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useWorkspace } from '../workspace'
+import { Mascot } from '../components/Mascot'
 import type { Notice, NoticeKind } from '../types'
 import { useRevealedNames } from '../lib/useRevealedNames'
 
@@ -28,7 +29,7 @@ export default function Inbox() {
   return (
     <div className="mx-auto max-w-xl px-5 py-6">
       <h1 className="display mb-6 text-3xl">Alerts</h1>
-      {notices.length === 0 && <p className="py-12 text-center text-mute">Nothing yet. Matches, introductions and reveals show up here.</p>}
+      {notices.length === 0 && <div className="grid justify-items-center gap-3 py-14 text-center"><Mascot size={104} mood="sleepy" /><p className="display text-2xl">All quiet</p><p className="max-w-xs text-sm text-mute">Matches, messages, introductions and reveals show up here.</p></div>}
       <ul className="space-y-2">
         {notices.map((n: Notice) => (
           <li key={n.id} className={`flex items-center gap-3 rounded-2xl p-4 ${n.read ? 'bg-surface' : 'bg-elevated'}`}>

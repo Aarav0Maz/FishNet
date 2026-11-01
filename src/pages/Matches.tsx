@@ -58,6 +58,7 @@ export default function Matches() {
                 <div className="flex items-center gap-4">
                   <Avatar persona={{ ...c.persona, name: c.identity.name }} size={60} />
                   <div className="min-w-0 flex-1"><p className="display truncate text-xl">{c.identity.name}</p><p className="truncate text-sm text-lav">{c.identity.role}</p></div>
+                  <button aria-label="Message" className="grid size-11 shrink-0 place-items-center rounded-full bg-elevated text-lav transition hover:text-ink active:scale-90" onClick={() => nav(`${base}/chat/${c.otherId}`)}><MessageCircle size={19} /></button>
                   <button aria-expanded={openPersona === c.id} aria-label="Show their persona" className="rounded-full p-2 text-mute hover:text-ink" onClick={() => setOpenPersona(openPersona === c.id ? null : c.id)}><ChevronDown className={`transition ${openPersona === c.id ? 'rotate-180' : ''}`} /></button>
                 </div>
                 {openPersona === c.id && <p className="mt-3 rounded-2xl bg-elevated p-3 text-sm text-mute"><span className="fiction-tag mr-2">Persona</span>{c.persona.name} · {c.persona.title}, {c.persona.company}</p>}
@@ -66,10 +67,10 @@ export default function Matches() {
               <div className="flex items-center gap-4">
                 <Avatar persona={c.persona} size={60} />
                 <div className="min-w-0 flex-1"><p className="display truncate text-xl">{c.persona.name}</p><p className="truncate text-sm text-lav">{c.persona.title}, {c.persona.company}</p><span className="fiction-tag mt-1 inline-block">Fictional persona</span></div>
+                <button aria-label="Message" className="grid size-11 shrink-0 place-items-center rounded-full bg-elevated text-lav transition hover:text-ink active:scale-90" onClick={() => nav(`${base}/chat/${c.otherId}`)}><MessageCircle size={19} /></button>
               </div>
             )}
-            <button className="btn btn-ghost mt-4 w-full" onClick={() => nav(`${base}/chat/${c.otherId}`)}><MessageCircle size={16} />Message</button>
-            <div className="mt-3">
+            <div className="mt-4">
               {c.reveal === 'revealed' ? <>
                 <RevealCard c={c} simulated={source.kind === 'demo'} onReplay={() => setReplay(c.id)} />
                 <button className="mt-3 text-xs text-mute underline" disabled={busy === c.id} onClick={() => void reveal(c, false)}>Hide again (withdraws your consent for both of you)</button>

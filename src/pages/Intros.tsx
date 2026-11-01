@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useWorkspace } from '../workspace'
+import { Mascot } from '../components/Mascot'
 import type { IntroRequest, IntroStatus } from '../types'
 import { useRevealedNames } from '../lib/useRevealedNames'
 
@@ -26,7 +27,7 @@ export default function Intros() {
       <p className="mb-6 text-sm text-mute">An intro completes only after the intermediary and the target both agree. Contact details are never shared by introductions.</p>
       {source.kind === 'demo' && <p className="mb-4 rounded-2xl bg-pinky/10 p-3 text-xs text-pinky">Demo: the other people’s responses are simulated a few seconds after you ask.</p>}
       {err && <p role="alert" className="mb-4 text-sm text-pinky">{err}</p>}
-      {list?.length === 0 && <p className="py-12 text-center text-mute">No introductions yet. Find a route in the Network tab, then ask for one.</p>}
+      {list?.length === 0 && <div className="grid justify-items-center gap-3 py-14 text-center"><Mascot size={104} mood="smug" /><p className="display text-2xl">No introductions yet</p><p className="max-w-xs text-sm text-mute">Find a route in the Network tab, then ask a connection to introduce you.</p></div>}
       <ul className="space-y-3">
         {list?.map((r) => {
           const actionable = (r.myRole === 'via' && r.status === 'pending_via') || (r.myRole === 'target' && r.status === 'pending_target')

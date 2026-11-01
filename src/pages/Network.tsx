@@ -50,7 +50,7 @@ export default function Network() {
       <div className="absolute left-4 right-4 top-2 z-10 flex flex-wrap items-center gap-2 md:left-6">
         <h1 className="display mr-2 text-2xl">Network</h1>
         <label className="sr-only" htmlFor="tgt">Find a route to</label>
-        <select id="tgt" className="field !w-auto max-w-[60%] !py-2 text-sm" value={target ?? ''} onChange={(e) => { setTarget(e.target.value || null); setSelected(e.target.value || null); setMsg(null) }}>
+        <select id="tgt" className="field !w-auto max-w-[60%] !py-2 text-sm" value={target ?? ''} onChange={(e) => { setTarget(e.target.value || null); setSelected(null); setMsg(null) }}>
           <option value="">Find a route to…</option>
           {graph.nodes.filter((n) => n.degree > 0).map((n) => <option key={n.id} value={n.id}>{n.revealedName ?? n.persona.name}{n.degree > 1 ? ` · ${n.degree} hops` : ''}</option>)}
         </select>
@@ -87,7 +87,7 @@ export default function Network() {
               <p className="text-sm text-lav">{p.title}</p><p className="text-xs text-mute">{p.company} · {p.valuation}</p>
               <span className="fiction-tag mt-2 inline-block">Fictional persona</span>
               <p className="mt-3 text-sm text-mute">{p.bio}</p>
-              {sel && sel.degree > 0 && <button className="btn btn-primary mt-4 w-full" onClick={() => { setTarget(sel.id); setMsg(null) }}>{sel.degree === 1 ? 'Show route' : 'Find route'}</button>}
+              {sel && sel.degree > 0 && <button className="btn btn-primary mt-4 w-full" onClick={() => { setTarget(sel.id); setSelected(null); setMsg(null) }}>{sel.degree === 1 ? 'Show route' : 'Find route'}</button>}
               {selRec && <p className="mt-3 text-xs text-mute">Suggested for you. Swipe on them in Discover to connect.</p>}
               {sel?.id === me.id && <p className="mt-3 text-xs text-mute">This is you.</p>}
             </> })()}
