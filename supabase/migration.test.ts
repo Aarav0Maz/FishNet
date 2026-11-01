@@ -37,6 +37,7 @@ beforeAll(async () => {
   await db.exec(readFileSync(new URL('./migrations/0001_fishnet.sql', import.meta.url), 'utf8'))
   await db.exec(readFileSync(new URL('./migrations/0002_jobs.sql', import.meta.url), 'utf8'))
   await db.exec(readFileSync(new URL('./migrations/0003_messages.sql', import.meta.url), 'utf8'))
+  await db.exec(readFileSync(new URL('./migrations/0004_intro_connects.sql', import.meta.url), 'utf8'))
   await db.exec('grant usage on schema public to anon, authenticated, service_role')
   await signup(A, 'A', [['design'], ['ai', 'climate'], ['cofounder']])
   await signup(B, 'B', [['ai'], ['design'], ['cofounder']])
@@ -96,11 +97,13 @@ describe('FishNet database', () => {
     await rpc(C, 'select respond_intro($1,true)', [id])
     expect((await rpc<{ status: string }>(A, 'select status from intro_requests where id=$1', [id]))[0].status).toBe('completed')
     const conn = (await rpc<{ n: number }>(A, 'select count(*)::int n from connections'))[0].n
-    expect(conn).toBe(1) // A still only sees A–B: an introduction does not create a connection
+    expect(conn).toBe(2) // the completed introduction connected A and C
+    const ac = (await rpc<{ n: number }>(A, 'select count(*)::int n from connections where user_a = least($1::uuid,$2::uuid) and user_b = greatest($1::uuid,$2::uuid)', [A, C]))[0].n
+    expect(ac).toBe(1)
   })
   it('reveal needs both consents; identity visible only then; withdrawal revokes', async () => {
     const view = async () => (await rpc<{ get_connections: { otherId: string; reveal: string; identity: { name: string } | null }[] }>(A, 'select get_connections()'))[0].get_connections.find((c) => c.otherId === B)!
-    await expect(rpc(A, 'select set_reveal($1,true)', [C])).rejects.toThrow() // not connected
+    await expect(rpc(A, 'select set_reveal($1,true)', [D])).rejects.toThrow() // not connected
     await rpc(A, 'select set_reveal($1,true)', [B])
     expect(await view()).toMatchObject({ reveal: 'requested_by_me', identity: null })
     const bView = (await rpc<{ get_connections: { reveal: string; identity: unknown }[] }>(B, 'select get_connections()'))[0].get_connections.find((c) => (c as unknown as { otherId: string }).otherId === A)!

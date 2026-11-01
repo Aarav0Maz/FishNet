@@ -10,6 +10,7 @@ export interface CanvasProps {
   meId: string
   path: string[] | null
   selected: string | null
+  focus?: string[] | null
   onSelect: (id: string | null) => void
 }
 type NData = { label: string; hue: number; degree: number; me: boolean; rec: boolean; dim: boolean; onPath: boolean; selected: boolean; revealed: boolean }
@@ -68,7 +69,7 @@ function layout(nodes: GraphNode[], edges: [string, string][], recs: Candidate[]
 }
 
 /** Glides the camera to the active route, and back out when it is cleared. */
-function FitRoute({ path, count }: { path: string[] | null; count: number }) {
+function FitRoute({ path, count }: { path: string[] | null; count: number }) {  // `path` is the focus set when walking
   const rf = useReactFlow()
   useEffect(() => {
     if (count === 0) return
@@ -82,7 +83,7 @@ function FitRoute({ path, count }: { path: string[] | null; count: number }) {
   return null
 }
 
-export default function GraphCanvas({ graph, recs, meId, path, selected, onSelect }: CanvasProps) {
+export default function GraphCanvas({ graph, recs, meId, path, selected, focus, onSelect }: CanvasProps) {
   const targets = useMemo(() => layout(graph.nodes, graph.edges, recs), [graph, recs])
   const [placed, setPlaced] = useState<Set<string>>(new Set())
 
@@ -125,7 +126,7 @@ export default function GraphCanvas({ graph, recs, meId, path, selected, onSelec
     <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes}
       minZoom={0.15} maxZoom={2} nodesDraggable={false} nodesConnectable={false} proOptions={{ hideAttribution: true }}
       onNodeClick={(_, n) => onSelect(n.id)} onPaneClick={() => onSelect(null)} colorMode="dark">
-      <FitRoute path={path} count={placed.size} />
+      <FitRoute path={focus ?? path} count={placed.size} />
       <Background color="#2a2140" gap={32} />
       <Controls showInteractive={false} />
     </ReactFlow>

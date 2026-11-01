@@ -63,11 +63,26 @@ function noise(dur: number, o: { freq: number; to?: number; q?: number; type?: B
 
 const N = { C5: 523.25, D5: 587.33, E5: 659.25, G5: 783.99, A5: 880, B5: 987.77, C6: 1046.5, E6: 1318.5, G6: 1568, C4: 261.63 }
 
+const jit = () => 1 + (Math.random() - 0.5) * 0.18
+function keyStroke(kind: 'key' | 'space' | 'enter' | 'back', vel: number) {
+  const deep = kind === 'space' ? 0.78 : kind === 'enter' ? 0.68 : kind === 'back' ? 1.1 : 1
+  const v = vel * (0.85 + Math.random() * 0.3)
+  // top-end click: the switch actuating
+  noise(0.012, { freq: 4300 * jit(), type: 'highpass', q: 0.7, vol: 0.05 * v })
+  tone(3100 * jit(), 0.014, { type: 'square', vol: 0.012 * v, attack: 0.001 })
+  // body: plate and case thock
+  tone(150 * deep * jit(), 0.07, { glide: 70 * deep, vol: 0.11 * v, attack: 0.002 })
+  noise(0.04, { freq: 1500 * deep * jit(), q: 1.6, vol: 0.035 * v, at: 0.004 })
+  if (kind === 'enter' || kind === 'space') tone(95 * jit(), 0.12, { glide: 55, vol: 0.07 * v, at: 0.01, attack: 0.003 })
+}
+
 export const sfx = {
-  /** Soft physical "thock" for any button press. */
-  tap() { tone(190, 0.07, { glide: 95, vol: 0.09, attack: 0.002 }); noise(0.025, { freq: 2600, type: 'highpass', vol: 0.025 }) },
-  /** Tiny glassy tick for chips, toggles and selections. */
-  tick() { tone(1900, 0.05, { type: 'triangle', vol: 0.035, attack: 0.002, wet: 0.2 }) },
+  /** Mechanical-keyboard "clack" for any button press: a crisp top-end click over a creamy low thock. */
+  tap() { keyStroke('key', 1.15) },
+  /** Lighter key for chips, toggles and selections. */
+  tick() { keyStroke('key', 0.7) },
+  /** Typing in a text field. */
+  key(kind: 'key' | 'space' | 'enter' | 'back' = 'key') { keyStroke(kind, 1) },
   whoosh(dir: 'like' | 'pass') { noise(0.2, { freq: dir === 'like' ? 500 : 2400, to: dir === 'like' ? 2600 : 450, q: 0.9, vol: 0.06, pan: dir === 'like' ? 0.5 : -0.5 }) },
   like() { sfx.whoosh('like'); tone(N.E5, 0.22, { vol: 0.07, wet: 0.5, at: 0.04 }); tone(N.B5, 0.3, { vol: 0.06, wet: 0.6, at: 0.1 }) },
   pass() { sfx.whoosh('pass'); tone(300, 0.14, { glide: 170, vol: 0.07, at: 0.03, wet: 0.15 }) },
@@ -103,6 +118,14 @@ export const dings = (count = 3) => sfx.dings(count)
 
 /** Plays a soft tap for every enabled button / link / switch press, app-wide. */
 export function installGlobalTapSound() {
+  document.addEventListener('keydown', (e) => {
+    const t = e.target as HTMLElement | null
+    if (e.repeat || e.metaKey || e.ctrlKey || !t || !/^(INPUT|TEXTAREA)$/.test(t.tagName)) return
+    if (e.key === 'Enter') sfx.key('enter')
+    else if (e.key === ' ') sfx.key('space')
+    else if (e.key === 'Backspace' || e.key === 'Delete') sfx.key('back')
+    else if (e.key.length === 1) sfx.key('key')
+  }, { capture: true, passive: true })
   document.addEventListener('pointerdown', (e) => {
     const el = (e.target as HTMLElement | null)?.closest?.('button, a, [role="switch"]') as HTMLButtonElement | null
     if (!el || el.disabled || el.dataset.silent !== undefined) return

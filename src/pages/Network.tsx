@@ -1,10 +1,12 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
-import { Route as RouteIcon, X } from 'lucide-react'
+import { ArrowRight as ArrowRightIcon, Route as RouteIcon, X } from 'lucide-react'
 import { useWorkspace } from '../workspace'
 import { shortestPath } from '../lib/graph'
-import type { Candidate, GraphData } from '../types'
+import type { Candidate, GraphData, IntroRequest } from '../types'
+import { PathWalk } from '../components/PathWalk'
+import { sfx } from '../lib/sound'
 import { Avatar } from '../components/PersonaCard'
 
 const GraphCanvas = lazy(() => import('../components/GraphCanvas'))
@@ -14,6 +16,9 @@ export default function Network() {
   const nav = useNavigate()
   const [graph, setGraph] = useState<GraphData | null>(null)
   const [recs, setRecs] = useState<Candidate[]>([])
+  const [intros, setIntros] = useState<IntroRequest[]>([])
+  const [walkRoute, setWalkRoute] = useState<string[] | null>(null)
+  const [walkStep, setWalkStep] = useState(1)
   const [err, setErr] = useState('')
   const [selected, setSelected] = useState<string | null>(null)
   const [target, setTarget] = useState<string | null>(null)
@@ -22,16 +27,35 @@ export default function Network() {
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null)
 
   const load = useCallback(async () => {
-    try { const [g, r] = await Promise.all([source.graph(), source.recommendations()]); setGraph(g); setRecs(r); setErr('') }
+    try { const [g, r, i] = await Promise.all([source.graph(), source.recommendations(), source.intros()]); setGraph(g); setRecs(r); setIntros(i); setErr('') }
     catch (e) { setErr(e instanceof Error ? e.message : 'Could not load network') }
   }, [source])
   useEffect(() => { void load() }, [load, version])
+  // While walking a path, keep checking for introductions being answered.
+  useEffect(() => {
+    if (!walkRoute) return
+    const t = setInterval(() => { void load() }, 4000)
+    return () => clearInterval(t)
+  }, [walkRoute, load])
 
   const byId = useMemo(() => new Map(graph?.nodes.map((n) => [n.id, n]) ?? []), [graph])
   const path = useMemo(() => (graph && me && target ? shortestPath(graph.edges, me.id, target) : null), [graph, me, target])
   const sel = selected ? (selected.startsWith('rec:') ? null : byId.get(selected) ?? null) : null
   const selRec = selected?.startsWith('rec:') ? recs.find((r) => `rec:${r.id}` === selected) : undefined
   const names = (ids: string[]) => ids.map((i) => { const n = byId.get(i); return n ? n.revealedName ?? n.persona.name : '?' })
+
+  async function askStep(viaId: string, targetId: string, note: string) {
+    if (busy) return
+    setBusy(true); setMsg(null)
+    try { await source.requestIntro(viaId, targetId, note); sfx.send(); await load() }
+    catch (e) { sfx.error(); setMsg({ ok: false, text: e instanceof Error ? e.message : 'Request failed' }) }
+    finally { setBusy(false) }
+  }
+
+  function startWalk() {
+    if (!path || path.length < 2) return
+    sfx.like(); setWalkRoute(path); setWalkStep(1); setSelected(null)
+  }
 
   async function ask() {
     if (!path || path.length < 3 || busy) return
@@ -50,19 +74,22 @@ export default function Network() {
       <div className="absolute left-4 right-4 top-2 z-10 flex flex-wrap items-center gap-2 md:left-6">
         <h1 className="display mr-2 text-2xl">Network</h1>
         <label className="sr-only" htmlFor="tgt">Find a route to</label>
-        <select id="tgt" className="field !w-auto max-w-[60%] !py-2 text-sm" value={target ?? ''} onChange={(e) => { setTarget(e.target.value || null); setSelected(null); setMsg(null) }}>
+        <select id="tgt" className="field !w-auto max-w-[60%] !py-2 text-sm" value={target ?? ''} onChange={(e) => { setWalkRoute(null); setTarget(e.target.value || null); setSelected(null); setMsg(null) }}>
           <option value="">Find a route to…</option>
           {graph.nodes.filter((n) => n.degree > 0).map((n) => <option key={n.id} value={n.id}>{n.revealedName ?? n.persona.name}{n.degree > 1 ? ` · ${n.degree} hops` : ''}</option>)}
         </select>
-        {target && <button className="btn btn-ghost !min-h-9 !py-1 text-sm" onClick={() => { setTarget(null); setMsg(null) }}>Clear</button>}
+        {target && <button className="btn btn-ghost !min-h-9 !py-1 text-sm" onClick={() => { setTarget(null); setWalkRoute(null); setMsg(null) }}>Clear</button>}
       </div>
       {lonely && <div className="absolute inset-0 z-10 grid place-content-center gap-3 text-center"><p className="display text-2xl">No connections yet</p><p className="text-sm text-mute">Match with someone in Discover and they will appear here.</p><button className="btn btn-primary mx-auto" onClick={() => nav(`${base}/discover`)}>Go discover</button></div>}
       <Suspense fallback={<div className="grid h-full place-items-center text-mute">Loading map…</div>}>
-        <GraphCanvas graph={graph} recs={recs} meId={me.id} path={path} selected={selected} onSelect={setSelected} />
+        <GraphCanvas graph={graph} recs={recs} meId={me.id} path={path ?? walkRoute} selected={selected} focus={walkRoute ? [walkRoute[walkStep - 1], walkRoute[walkStep]] : null} onSelect={setSelected} />
       </Suspense>
       <p className="pointer-events-none absolute bottom-3 left-4 hidden text-xs text-mute md:block">Solid lines: confirmed connections · Dashed: suggestions (not connected)</p>
 
-      {target && (
+      {walkRoute && <PathWalk route={walkRoute} step={walkStep} nodes={byId} intros={intros} busy={busy} onStep={setWalkStep} onAsk={askStep} onMessage={(id) => nav(`${base}/chat/${id}`)} onClose={() => { setWalkRoute(null); setMsg(null) }} />}
+      {msg && walkRoute && !msg.ok && <p role="alert" className="absolute inset-x-3 bottom-72 z-30 mx-auto max-w-lg rounded-2xl bg-surface p-3 text-center text-sm text-pinky">{msg.text}</p>}
+
+      {target && !walkRoute && (
         <div className="absolute inset-x-3 bottom-3 z-20 mx-auto max-w-lg rounded-3xl border border-white/10 bg-surface/95 p-4 backdrop-blur" role="region" aria-label="Route">
           {path ? <>
             <p className="flex items-center gap-2 text-sm"><RouteIcon size={16} className="text-lav" />{path.length - 1} hop{path.length > 2 ? 's' : ''} through confirmed connections</p>
@@ -71,6 +98,7 @@ export default function Network() {
               <input className="field !py-2 text-sm" placeholder={`Note to ${names([path[1]])[0]} (optional)`} maxLength={280} value={note} onChange={(e) => setNote(e.target.value)} />
               <button className="btn btn-primary w-full" disabled={busy} onClick={ask}>{busy ? 'Sending…' : `Ask ${names([path[1]])[0]} to introduce you to ${names([path[2]])[0]}`}</button>
             </div> : <p className="mt-2 text-sm text-mute">You are already connected.</p>}
+            {path.length >= 2 && <button className="btn btn-ghost mt-2 w-full" onClick={startWalk}>Take this path<ArrowRightIcon size={16} /></button>}
           </> : <p className="text-sm text-mute">No route found through confirmed connections.</p>}
           {msg && <p role="status" className={`mt-2 text-sm ${msg.ok ? 'text-lav' : 'text-pinky'}`}>{msg.text}</p>}
         </div>

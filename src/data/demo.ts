@@ -106,6 +106,7 @@ export function createDemoSource(): DataSource {
         const cur = intros.find((i) => i.id === req.id)
         if (cur?.status !== 'pending_target') return
         intros = intros.map((i) => (i.id === req.id ? { ...i, status: 'completed' } : i))
+        if (!connected(DEMO_ME, targetId)) edges.push([DEMO_ME, targetId])
         notify('intro_accepted', nameOf(targetId))
       }, 5500)
     },
