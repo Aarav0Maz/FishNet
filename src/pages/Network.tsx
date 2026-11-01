@@ -7,6 +7,7 @@ import { shortestPath } from '../lib/graph'
 import type { Candidate, GraphData, IntroRequest } from '../types'
 import { PathWalk } from '../components/PathWalk'
 import { sfx } from '../lib/sound'
+import { InviteButton } from '../components/InviteButton'
 import { Avatar } from '../components/PersonaCard'
 
 const GraphCanvas = lazy(() => import('../components/GraphCanvas'))
@@ -85,7 +86,7 @@ export default function Network() {
         </select>
         {target && <button className="btn btn-ghost !min-h-9 !py-1 text-sm" onClick={() => { setTarget(null); setWalkRoute(null); setMsg(null) }}>Clear</button>}
       </div>
-      {lonely && <div className="absolute inset-0 z-10 grid place-content-center gap-3 text-center"><p className="display text-2xl">No connections yet</p><p className="text-sm text-mute">Match with someone in Discover and they will appear here.</p><button className="btn btn-primary mx-auto" onClick={() => nav(`${base}/discover`)}>Go discover</button></div>}
+      {lonely && <div className="absolute inset-0 z-10 grid place-content-center gap-3 text-center"><p className="display text-2xl">No connections yet</p><p className="text-sm text-mute">Match with someone in Discover and they will appear here.</p><button className="btn btn-primary mx-auto" onClick={() => nav(`${base}/discover`)}>Find encounters</button><InviteButton className="btn btn-ghost mx-auto" label="Invite friends to play" /></div>}
       <Suspense fallback={<div className="grid h-full place-items-center text-mute">Loading map…</div>}>
         <GraphCanvas graph={graph} recs={recs} meId={me.id} path={path ?? walkRoute} selected={selected} focus={walkRoute ? [walkRoute[walkStep - 1], walkRoute[walkStep]] : null} onSelect={setSelected} />
       </Suspense>
@@ -103,7 +104,7 @@ export default function Network() {
               <input className="field !py-2 text-sm" placeholder={`Note to ${names([path[1]])[0]} (optional)`} maxLength={280} value={note} onChange={(e) => setNote(e.target.value)} />
               <button className="btn btn-primary w-full" disabled={busy} onClick={ask}>{busy ? 'Sending…' : `Ask ${names([path[1]])[0]} to introduce you to ${names([path[2]])[0]}`}</button>
             </div> : <p className="mt-2 text-sm text-mute">You are already connected.</p>}
-            {path.length >= 2 && <button className="btn btn-ghost mt-2 w-full" onClick={startWalk}>Take this path<ArrowRightIcon size={16} /></button>}
+            {path.length >= 2 && <button className="btn btn-ghost mt-2 w-full" onClick={startWalk}>Start quest<ArrowRightIcon size={16} /></button>}
           </> : <p className="text-sm text-mute">No route found through confirmed connections.</p>}
           {msg && <p role="status" className={`mt-2 text-sm ${msg.ok ? 'text-lav' : 'text-pinky'}`}>{msg.text}</p>}
         </div>

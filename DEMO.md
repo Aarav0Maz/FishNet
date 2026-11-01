@@ -1,10 +1,20 @@
-# 2-minute demo script
+# 2-minute demo: "A role-playing game for real networking"
 
-1. **(0:00) Persona.** Open `/demo`. Fill step 1 quickly, pick *Billionaire Founder* in step 2, rename it. Point at the "Fictional persona" tag.
-2. **(0:25) Discovery.** Swipe right with the arrow key or drag. Mention relevance is a deterministic score, not AI.
-3. **(0:45) Match.** When the match animation plays, say: in live mode this only happens when both people like each other, enforced in one database function. (Demo labels it simulated.)
-4. **(1:00) Network.** Open Network. Pick a three-hop target; the real route lights up and everyone else fades.
-5. **(1:20) Introduction.** Press "Ask … to introduce you". Intros shows it needs the intermediary and the target.
-6. **(1:40) Reveal.** In Matches, request a reality reveal. The persona card folds into the real profile (simulated in demo; live needs both approvals).
+Prep: Sound on. Live URL open in one tab (demo mode), live app signed in as A in a second tab, Render dashboard in a third.
 
-Closing line: **"The persona was fictional. The connection is real."**
+| Time | Do | Say |
+|---|---|---|
+| 0:00 | Landing page | "Walking up to a stranger is hard. FishNet is a role-playing game for real networking: start as a character, end with a real connection." |
+| 0:12 | Click **Try the demo**, hit **Re-roll** twice | "You roll a character. Billionaire founder. Fictional name, company, valuation, always labelled fictional." |
+| 0:30 | Press → on **Encounters** | "Swipe. A match only forms when you both like each other, enforced in the database." Match overlay plays. |
+| 0:45 | **View network**, pick a far target, **Start quest** | "Your network is the quest map. The route is built only from confirmed connections." Step to stop 2, press Ask. |
+| 1:05 | **Matches → message icon**, tap a starter, send | "Masked chat, with icebreakers from shared interests." |
+| 1:20 | **Reveal myself**, let drum roll and flip play | "When you both choose, the mask comes off." Closing line on screen. |
+| 1:40 | Switch to the live app tab (A), show Matches with a real revealed name | "That was the simulation. This is real: real accounts, real database, a real reveal." |
+| 1:52 | Render dashboard tab | "Live on Render, Supabase behind it." |
+| 2:00 | Stop | "The persona was fictional. The connection is real." |
+
+Q&A answers
+- Where do users come from? Invites and word of mouth. There's an Invite button, and the persona is what makes people want to share it.
+- Is it real? Yes, the second tab. Demo mode is a labelled simulation.
+- How is real identity protected? Row-level security in the database. Real fields only return after both people consent.

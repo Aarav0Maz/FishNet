@@ -7,6 +7,7 @@ import type { Candidate } from '../types'
 import { PersonaCard } from '../components/PersonaCard'
 import { MatchOverlay } from '../components/MatchOverlay'
 import { Mascot } from '../components/Mascot'
+import { InviteButton } from '../components/InviteButton'
 import { sfx } from '../lib/sound'
 
 const PAGE = 10
@@ -78,13 +79,13 @@ export default function Discover() {
 
   return (
     <div className="mx-auto flex min-h-full max-w-md flex-col px-5 py-6">
-      <h1 className="display mb-4 text-3xl">Discover</h1>
+      <h1 className="display mb-4 text-3xl">Encounters</h1>
       <div className="relative h-[28rem] w-full">
         {state === 'loading' && <div className="grid h-full place-items-center text-mute" role="status">Finding people…</div>}
         {state === 'error' && <div className="grid h-full place-content-center gap-3 text-center"><p className="text-pinky">{err}</p><button className="btn btn-ghost mx-auto" onClick={() => void load(true)}>Retry</button></div>}
         {state === 'ready' && deck.length === 0 && (
           <div className="grid h-full place-content-center justify-items-center gap-3 text-center"><Mascot size={120} mood="sleepy" /><p className="display text-2xl">The pond is quiet</p><p className="max-w-xs text-sm text-mute">You have seen everyone for now. Check back as more people join, or explore your network.</p>
-            <div className="flex gap-2"><button className="btn btn-ghost" onClick={() => { setDone(false); void load(true) }}>Refresh</button><button className="btn btn-primary" onClick={() => nav(`${base}/network`)}>Open network</button></div></div>
+            <div className="flex gap-2"><button className="btn btn-ghost" onClick={() => { setDone(false); void load(true) }}>Refresh</button><button className="btn btn-primary" onClick={() => nav(`${base}/network`)}>Open network</button></div><InviteButton className="btn btn-ghost" label="Invite friends to play" /></div>
         )}
         <AnimatePresence custom={exitDir}>
           {deck.slice(0, 2).reverse().map((c, i, arr) => <SwipeCard key={c.id} c={c} isTop={i === arr.length - 1} onSwipe={act} dir={exitDir} />)}

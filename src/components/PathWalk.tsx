@@ -34,11 +34,11 @@ export function PathWalk({ route, step, nodes, intros, busy, onStep, onAsk, onMe
     <motion.div initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 26 }}
       className="absolute inset-x-3 bottom-3 z-30 mx-auto max-w-lg rounded-3xl border border-lav/30 bg-surface/95 p-4 shadow-[0_0_60px_-15px_rgba(153,92,255,.8)]" role="region" aria-label="Path walk">
       <div className="mb-3 flex items-center justify-between">
-        <div className="flex items-center gap-1.5" aria-label={`Stop ${step} of ${route.length - 1}`}>
+        <div className="flex items-center gap-1.5" aria-label={`Quest step ${step} of ${route.length - 1}`}>
           {route.slice(1).map((id, i) => <span key={id} className={`h-1.5 rounded-full transition-all ${i + 1 === step ? 'w-6 bg-accent' : i + 1 < step ? 'w-3 bg-lav/70' : 'w-3 bg-elevated'}`} />)}
-          <span className="ml-2 text-xs text-mute">Stop {step} of {route.length - 1}</span>
+          <span className="ml-2 text-xs text-mute">Quest step {step} of {route.length - 1}</span>
         </div>
-        <button aria-label="End path" className="rounded-full p-1.5 text-mute hover:text-ink" onClick={onClose}><X size={18} /></button>
+        <button aria-label="End quest" className="rounded-full p-1.5 text-mute hover:text-ink" onClick={onClose}><X size={18} /></button>
       </div>
 
       <motion.div key={cur.id} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.25 }} className="flex items-center gap-4">
@@ -54,7 +54,7 @@ export function PathWalk({ route, step, nodes, intros, busy, onStep, onAsk, onMe
         {connected ? (
           <div className="flex gap-2">
             <button className="btn btn-primary flex-1" onClick={() => onMessage(cur.id)}><MessageCircle size={17} />Message {label(cur).split(' ')[0]}</button>
-            {!last && <button className="btn btn-ghost" onClick={() => go(step + 1)}>Next stop<ArrowRight size={16} /></button>}
+            {!last && <button className="btn btn-ghost" onClick={() => go(step + 1)}>Next step<ArrowRight size={16} /></button>}
           </div>
         ) : intro?.status === 'completed' ? (
           <div className="rounded-2xl bg-elevated px-4 py-3 text-sm text-lav">Introduction approved. Connecting you…</div>
@@ -70,8 +70,8 @@ export function PathWalk({ route, step, nodes, intros, busy, onStep, onAsk, onMe
             <button className="btn btn-primary w-full" disabled={busy} onClick={() => onAsk(route[step - 1], cur.id, note)}>{busy ? 'Sending…' : `Ask ${label(prev)} to introduce you to ${label(cur)}`}</button>
           </>
         )}
-        {last && connected && <p className="text-center text-xs text-lav">You made it. Everyone on this path is now a connection.</p>}
-        {step > 1 && <button className="flex items-center gap-1 text-xs text-mute hover:text-ink" onClick={() => go(step - 1)}><ChevronLeft size={14} />Previous stop</button>}
+        {last && connected && <p className="text-center text-xs text-lav">Quest complete. Everyone on this path is now a connection.</p>}
+        {step > 1 && <button className="flex items-center gap-1 text-xs text-mute hover:text-ink" onClick={() => go(step - 1)}><ChevronLeft size={14} />Previous step</button>}
       </div>
     </motion.div>
   )

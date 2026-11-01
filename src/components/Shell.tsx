@@ -3,6 +3,7 @@ import { motion, useReducedMotion } from 'motion/react'
 import { Bell, Compass, Handshake, Network, Send, LogOut, Pencil } from 'lucide-react'
 import { useWorkspace } from '../workspace'
 import { SoundToggle } from './SoundToggle'
+import { InviteButton } from './InviteButton'
 import { supabase } from '../data/supabase'
 
 export function Shell() {
@@ -10,7 +11,7 @@ export function Shell() {
   const nav = useNavigate()
   const { pathname } = useLocation()
   const reduce = useReducedMotion()
-  const hint = ({ discover: 'Swipe right (→) to match', network: 'Pick a far target to see the route', matches: 'Message a match, then reveal', intros: 'Responses arrive in a few seconds', inbox: 'Alerts appear as things happen' } as Record<string, string>)[pathname.split('/')[2] ?? ''] ?? ''
+  const hint = ({ discover: 'Swipe right (→) to match', network: 'Pick a far target to start a quest', matches: 'Message a match, then reveal', intros: 'Responses arrive in a few seconds', inbox: 'Alerts appear as things happen' } as Record<string, string>)[pathname.split('/')[2] ?? ''] ?? ''
   const items = [
     { to: 'discover', icon: Compass, label: 'Discover' },
     { to: 'network', icon: Network, label: 'Network' },
@@ -37,6 +38,7 @@ export function Shell() {
           {me && <p className="truncate px-4" title="Your fictional persona">Playing: {me.persona.name}</p>}
           <button className="flex items-center gap-3 px-4 py-2 hover:text-ink" onClick={() => nav(`${base}/onboarding`)}><Pencil size={16} />Edit persona</button>
           <SoundToggle />
+          <InviteButton className="flex w-full items-center gap-3 rounded-2xl px-4 py-2.5 text-sm text-mute transition hover:bg-elevated/60 hover:text-ink" />
           <button className="flex items-center gap-3 px-4 py-2 hover:text-ink" onClick={async () => { if (supabase && source.kind === 'live') await supabase.auth.signOut(); nav('/') }}>
             <LogOut size={16} />{source.kind === 'demo' ? 'Exit demo' : 'Log out'}
           </button>

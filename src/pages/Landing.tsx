@@ -13,7 +13,7 @@ export default function Landing() {
       <section className="grid flex-1 items-center gap-10 py-12 md:grid-cols-2">
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .8, ease: [.22, 1, .36, 1] }}>
           <h1 className="display text-5xl leading-[1.05] md:text-7xl">Come for the <em className="text-lav">fake status.</em><br />Leave with <em className="text-pinky">real connections.</em></h1>
-          <p className="mt-6 max-w-md text-mute">Networking is a performance anyway. Rehearse the bold version of you behind a mask, break the ice with real conversation starters, and take the mask off only when you both choose to.</p>
+          <p className="mt-6 max-w-md text-mute">A role-playing game for real networking. Roll a character, meet other players, quest your way to anyone, and take the mask off only when you both choose to.</p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link to={session ? '/app' : '/auth'} className="btn btn-primary">{session ? 'Continue' : 'Join FishNet'}</Link>
             <Link to="/demo" className="btn btn-ghost">Try the demo</Link>
