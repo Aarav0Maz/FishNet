@@ -1,8 +1,7 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Bell, Compass, Handshake, Network, Send, LogOut, Volume2, VolumeX, Pencil } from 'lucide-react'
-import { useState } from 'react'
+import { Bell, Compass, Handshake, Network, Send, LogOut, Pencil } from 'lucide-react'
 import { useWorkspace } from '../workspace'
-import { setSound, soundEnabled } from '../lib/sound'
+import { SoundToggle } from './SoundToggle'
 import { supabase } from '../data/supabase'
 
 export function Shell() {
@@ -10,7 +9,6 @@ export function Shell() {
   const nav = useNavigate()
   const { pathname } = useLocation()
   const hint = ({ discover: 'Swipe right (→) to match', network: 'Pick a far target to see the route', matches: 'Message a match, then reveal', intros: 'Responses arrive in a few seconds', inbox: 'Alerts appear as things happen' } as Record<string, string>)[pathname.split('/')[2] ?? ''] ?? ''
-  const [snd, setSnd] = useState(soundEnabled())
   const items = [
     { to: 'discover', icon: Compass, label: 'Discover' },
     { to: 'network', icon: Network, label: 'Network' },
@@ -27,6 +25,7 @@ export function Shell() {
           DEMO MODE · simulated, nothing saved{hint && <span className="hidden sm:inline"> · {hint}</span>}
         </div>
       )}
+      <div className="fixed right-3 top-9 z-40 md:hidden"><SoundToggle compact /></div>
       <aside className="hidden w-60 shrink-0 flex-col border-r border-white/5 p-5 pt-10 md:flex">
         <span className="display mb-8 text-2xl">Fish<span className="text-accent">Net</span></span>
         <nav className="flex flex-col gap-1">
@@ -35,9 +34,7 @@ export function Shell() {
         <div className="mt-auto space-y-2 text-sm text-mute">
           {me && <p className="truncate px-4" title="Your fictional persona">Playing: {me.persona.name}</p>}
           <button className="flex items-center gap-3 px-4 py-2 hover:text-ink" onClick={() => nav(`${base}/onboarding`)}><Pencil size={16} />Edit persona</button>
-          <button className="flex items-center gap-3 px-4 py-2 hover:text-ink" onClick={() => { setSound(!snd); setSnd(!snd) }} aria-pressed={snd}>
-            {snd ? <Volume2 size={16} /> : <VolumeX size={16} />}Sound {snd ? 'on' : 'off'}
-          </button>
+          <SoundToggle />
           <button className="flex items-center gap-3 px-4 py-2 hover:text-ink" onClick={async () => { if (supabase && source.kind === 'live') await supabase.auth.signOut(); nav('/') }}>
             <LogOut size={16} />{source.kind === 'demo' ? 'Exit demo' : 'Log out'}
           </button>

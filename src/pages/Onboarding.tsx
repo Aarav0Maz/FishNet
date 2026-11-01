@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { useWorkspace } from '../workspace'
-import { parseTags } from '../lib/graph'
+import { canonicalTags, GOAL_OPTIONS, INTEREST_OPTIONS } from '../lib/tags'
+import { TagPicker } from '../components/TagPicker'
 import { TEMPLATES, TEMPLATE_KEYS, type MyProfileInput } from '../types'
 import { rollPersona } from '../lib/persona'
 import { Dices } from 'lucide-react'
@@ -18,22 +19,22 @@ export default function Onboarding() {
   const [busy, setBusy] = useState(false)
   const [err, setErr] = useState('')
   const [real, setReal] = useState(me?.real ?? { name: '', role: '', bio: '', linkedin: '' })
-  const [skills, setSkills] = useState(me?.tags.skills.join(', ') ?? '')
-  const [interests, setInterests] = useState(me?.tags.interests.join(', ') ?? '')
-  const [goals, setGoals] = useState(me?.tags.goals.join(', ') ?? '')
+  const [skills, setSkills] = useState<string[]>(me?.tags.skills ?? [])
+  const [interests, setInterests] = useState<string[]>(me?.tags.interests ?? [])
+  const [goals, setGoals] = useState<string[]>(me?.tags.goals ?? [])
   const [tpl, setTpl] = useState(me?.persona.template ?? 'billionaire')
   const [persona, setPersona] = useState(me?.persona ?? rollPersona('billionaire'))
   const [settings, setSettings] = useState(me?.settings ?? { discoverable: true, showInGraph: true })
 
   const pick = (k: string) => { setTpl(k); setPersona(rollPersona(k, persona.hue)) }
-  const canNext = step === 1 ? real.name.trim() && parseTags(interests).length > 0 : step === 0 ? persona.name.trim() && persona.title.trim() && persona.company.trim() : true
+  const canNext = step === 1 ? real.name.trim() && interests.length > 0 : step === 0 ? persona.name.trim() && persona.title.trim() && persona.company.trim() : true
 
   async function finish() {
     if (busy) return
     setBusy(true); setErr('')
     try {
       if (real.linkedin && !/^https?:\/\/([\w-]+\.)?linkedin\.com\//i.test(real.linkedin)) throw new Error('LinkedIn URL must start with https://linkedin.com/')
-      const input: MyProfileInput = { real, tags: { skills: parseTags(skills), interests: parseTags(interests), goals: parseTags(goals) }, settings, persona }
+      const input: MyProfileInput = { real, tags: { skills: canonicalTags(skills), interests: canonicalTags(interests), goals: canonicalTags(goals, 'goal') }, settings, persona }
       setMe(await source.saveMe(input))
       nav(`${base}/discover`, { replace: true })
     } catch (e) { setErr(e instanceof Error ? e.message : 'Could not save'); setBusy(false) }
@@ -48,28 +49,37 @@ export default function Onboarding() {
       <AnimatePresence mode="wait">
         <motion.div key={step} initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: .25 }} className="space-y-4">
           {step === 1 && <>
-            <p className="text-sm text-mute">Your real details stay private. Others only see them if you both approve a reveal.</p>
+            <p className="text-sm text-mute">Your real details stay private. Others only see them if you both choose to reveal.</p>
             <F label="Your name"><input className="field" value={real.name} maxLength={80} onChange={(e) => setReal({ ...real, name: e.target.value })} /></F>
             <F label="Role or education (optional)"><input className="field" value={real.role} maxLength={120} placeholder="e.g. CS student at UofT" onChange={(e) => setReal({ ...real, role: e.target.value })} /></F>
             <F label="Short bio"><textarea className="field" rows={2} maxLength={500} value={real.bio} onChange={(e) => setReal({ ...real, bio: e.target.value })} /></F>
-            <F label="Skills (comma separated)"><input className="field" value={skills} placeholder="Design, React, Finance" onChange={(e) => setSkills(e.target.value)} /></F>
-            <F label="Professional interests (comma separated)"><input className="field" value={interests} placeholder="AI, Climate, Gaming" onChange={(e) => setInterests(e.target.value)} /></F>
-            <F label="Networking goals (comma separated)"><input className="field" value={goals} placeholder="Find cofounder, Mentorship" onChange={(e) => setGoals(e.target.value)} /></F>
+            <TagPicker label="Interests (pick at least one)" hint="Matching is based on these. Similar words are merged for you." kind="interest" options={INTEREST_OPTIONS} value={interests} onChange={setInterests} />
+            <TagPicker label="Skills" kind="interest" options={INTEREST_OPTIONS} value={skills} onChange={setSkills} />
+            <TagPicker label="Networking goals" kind="goal" options={GOAL_OPTIONS} value={goals} onChange={setGoals} />
             <F label="LinkedIn URL (optional, only shown after a mutual reveal)"><input className="field" inputMode="url" value={real.linkedin} onChange={(e) => setReal({ ...real, linkedin: e.target.value })} /></F>
           </>}
           {step === 0 && <>
-            <div className="flex flex-wrap items-center gap-2">{TEMPLATE_KEYS.map((k) => <button key={k} onClick={() => pick(k)} aria-pressed={tpl === k} className={`rounded-full px-4 py-2 text-sm transition ${tpl === k ? 'bg-accent text-white shadow-[var(--glow)]' : 'bg-elevated text-mute hover:text-ink'}`}>{TEMPLATES[k].label}</button>)}
-              <button type="button" onClick={() => setPersona(rollPersona(tpl))} className="ml-auto flex items-center gap-2 rounded-full bg-elevated px-4 py-2 text-sm text-lav hover:text-ink"><Dices size={16} />Re-roll</button></div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <F label="Fictional name"><input className="field" maxLength={60} value={persona.name} onChange={(e) => setPersona({ ...persona, name: e.target.value })} /></F>
-              <F label="Fictional title"><input className="field" maxLength={80} value={persona.title} onChange={(e) => setPersona({ ...persona, title: e.target.value })} /></F>
-              <F label="Fictional company"><input className="field" maxLength={80} value={persona.company} onChange={(e) => setPersona({ ...persona, company: e.target.value })} /></F>
-              <F label="Fictional valuation"><input className="field" maxLength={30} value={persona.valuation} onChange={(e) => setPersona({ ...persona, valuation: e.target.value })} /></F>
+            <div className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-1 [scrollbar-width:none]" role="radiogroup" aria-label="Persona template">
+              {TEMPLATE_KEYS.map((k) => <button key={k} role="radio" aria-checked={tpl === k} onClick={() => pick(k)} className={`shrink-0 rounded-full px-4 py-2.5 text-sm transition active:scale-95 ${tpl === k ? 'bg-accent text-white shadow-[var(--glow)]' : 'bg-elevated text-mute hover:text-ink'}`}>{TEMPLATES[k].label}</button>)}
             </div>
-            <F label="Fictional bio"><textarea className="field" rows={2} maxLength={280} value={persona.bio} onChange={(e) => setPersona({ ...persona, bio: e.target.value })} /></F>
-            <F label={`Aura colour`}><input type="range" min={0} max={360} value={persona.hue} onChange={(e) => setPersona({ ...persona, hue: +e.target.value })} className="w-full accent-accent" /></F>
+            <motion.div key={persona.name + persona.company} initial={{ opacity: 0, y: 10, scale: .98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 24 }} className="h-72">
+              <PersonaCard persona={persona} />
+            </motion.div>
+            <button type="button" onClick={() => setPersona(rollPersona(tpl, persona.hue))} className="btn btn-ghost w-full"><Dices size={18} />Re-roll persona</button>
+            <details className="group rounded-2xl bg-surface">
+              <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between px-4 text-sm text-mute marker:hidden"><span>Customize details</span><span className="text-lav transition group-open:rotate-180">⌄</span></summary>
+              <div className="space-y-3 px-4 pb-4">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <F label="Fictional name"><input className="field" maxLength={60} value={persona.name} onChange={(e) => setPersona({ ...persona, name: e.target.value })} /></F>
+                  <F label="Fictional title"><input className="field" maxLength={80} value={persona.title} onChange={(e) => setPersona({ ...persona, title: e.target.value })} /></F>
+                  <F label="Fictional company"><input className="field" maxLength={80} value={persona.company} onChange={(e) => setPersona({ ...persona, company: e.target.value })} /></F>
+                  <F label="Fictional valuation"><input className="field" maxLength={30} value={persona.valuation} onChange={(e) => setPersona({ ...persona, valuation: e.target.value })} /></F>
+                </div>
+                <F label="Fictional bio"><textarea className="field" rows={2} maxLength={280} value={persona.bio} onChange={(e) => setPersona({ ...persona, bio: e.target.value })} /></F>
+                <F label="Aura colour"><input type="range" min={0} max={360} value={persona.hue} onChange={(e) => setPersona({ ...persona, hue: +e.target.value })} className="w-full accent-accent" /></F>
+              </div>
+            </details>
             <p className="text-xs text-mute">Please don’t impersonate real people. Everything here is shown as fictional, never as verified.</p>
-            <div className="h-72"><PersonaCard persona={persona} /></div>
           </>}
           {step === 2 && <>
             <Toggle label="Show me in Discover" hint="Others can swipe on your persona. Required to be matched." on={settings.discoverable} set={(v) => setSettings({ ...settings, discoverable: v })} />

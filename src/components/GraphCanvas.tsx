@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Background, Controls, Handle, Position, ReactFlow, getStraightPath, useReactFlow, type EdgeProps, type Node, type NodeProps, type Edge } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import type { Candidate, GraphData, GraphNode } from '../types'
@@ -27,7 +27,7 @@ function FNode({ data }: NodeProps<Node<NData>>) {
         boxShadow: data.onPath || data.selected || data.me ? '0 0 0 3px rgba(153,92,255,.9), 0 0 28px rgba(153,92,255,.7)' : 'none',
         opacity: data.rec ? 0.7 : 1,
       }}>{initials(data.label)}</div>
-      <span className="max-w-24 truncate text-center text-[11px] text-ink/90">{data.revealed ? `✦ ${data.label}` : data.label}</span>
+      <span className="max-w-28 truncate text-center text-xs font-medium text-ink/90">{data.revealed ? `✦ ${data.label}` : data.label}</span>
     </div>
   )
 }
@@ -44,7 +44,7 @@ const edgeTypes = { fn: FEdge }
 function layout(nodes: GraphNode[], edges: [string, string][], recs: Candidate[]): Map<string, { x: number; y: number }> {
   const pos = new Map<string, { x: number; y: number }>()
   const ang = new Map<string, number>()
-  const R = [0, 230, 430, 620]
+  const R = [0, 200, 360, 510]
   const me = nodes.find((n) => n.degree === 0)
   if (me) pos.set(me.id, { x: 0, y: 0 })
   for (let d = 1; d <= 3; d++) {
@@ -63,18 +63,22 @@ function layout(nodes: GraphNode[], edges: [string, string][], recs: Candidate[]
       pos.set(n.id, { x: Math.cos(a) * R[d], y: Math.sin(a) * R[d] })
     })
   }
-  recs.forEach((r, i) => { const a = (i / Math.max(recs.length, 1)) * Math.PI * 2 + 0.3; pos.set(`rec:${r.id}`, { x: Math.cos(a) * 780, y: Math.sin(a) * 780 }) })
+  recs.forEach((r, i) => { const a = (i / Math.max(recs.length, 1)) * Math.PI * 2 + 0.3; pos.set(`rec:${r.id}`, { x: Math.cos(a) * 640, y: Math.sin(a) * 640 }) })
   return pos
 }
 
 /** Glides the camera to the active route, and back out when it is cleared. */
-function FitRoute({ path }: { path: string[] | null }) {
+function FitRoute({ path, count }: { path: string[] | null; count: number }) {
   const rf = useReactFlow()
-  const had = useRef(false)
   useEffect(() => {
-    if (path && path.length > 1) { had.current = true; void rf.fitView({ nodes: path.map((id) => ({ id })), duration: 700, padding: 0.5 }) }
-    else if (had.current) { had.current = false; void rf.fitView({ duration: 600, padding: 0.15 }) }
-  }, [path, rf])
+    if (count === 0) return
+    // wait a frame so nodes have left the origin before measuring
+    const t = setTimeout(() => {
+      if (path && path.length > 1) void rf.fitView({ nodes: path.map((id) => ({ id })), duration: 700, padding: 0.5 })
+      else void rf.fitView({ duration: 800, padding: 0.12 })
+    }, 350)
+    return () => clearTimeout(t)
+  }, [path, rf, count])
   return null
 }
 
@@ -118,10 +122,10 @@ export default function GraphCanvas({ graph, recs, meId, path, selected, onSelec
   ], [graph.edges, recs, pathEdges, hasPath, meId])
 
   return (
-    <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes} fitView fitViewOptions={{ padding: 0.15 }}
+    <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} edgeTypes={edgeTypes}
       minZoom={0.15} maxZoom={2} nodesDraggable={false} nodesConnectable={false} proOptions={{ hideAttribution: true }}
       onNodeClick={(_, n) => onSelect(n.id)} onPaneClick={() => onSelect(null)} colorMode="dark">
-      <FitRoute path={path} />
+      <FitRoute path={path} count={placed.size} />
       <Background color="#2a2140" gap={32} />
       <Controls showInteractive={false} />
     </ReactFlow>

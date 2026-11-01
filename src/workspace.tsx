@@ -1,5 +1,6 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useRef, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { DataSource, MyProfile, Notice } from './types'
+import { sfx } from './lib/sound'
 
 interface WS {
   source: DataSource
@@ -25,10 +26,19 @@ export function WorkspaceProvider({ source, base, children }: { source: DataSour
   const [ready, setReady] = useState(false)
   const [notices, setNotices] = useState<Notice[]>([])
   const [version, setVersion] = useState(0)
+  const knownIds = useRef<Set<string> | null>(null)
   const bump = useCallback(() => setVersion((v) => v + 1), [])
 
   const refreshNotices = useCallback(async () => {
-    try { setNotices(await source.notices()) } catch { /* transient; next event retries */ }
+    try {
+      const list = await source.notices()
+      if (knownIds.current) {
+        const fresh = list.filter((n) => !n.read && n.kind !== 'match' && !knownIds.current!.has(n.id))
+        if (fresh.length) { if (fresh.some((n) => n.kind === 'message')) sfx.receive(); else sfx.notify() }
+      }
+      knownIds.current = new Set(list.map((n) => n.id))
+      setNotices(list)
+    } catch { /* transient; next event retries */ }
   }, [source])
 
   useEffect(() => {

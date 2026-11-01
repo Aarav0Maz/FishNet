@@ -7,7 +7,7 @@ import type { Candidate } from '../types'
 import { PersonaCard } from '../components/PersonaCard'
 import { MatchOverlay } from '../components/MatchOverlay'
 import { Mascot } from '../components/Mascot'
-import { blip, matchChime } from '../lib/sound'
+import { sfx } from '../lib/sound'
 
 const PAGE = 10
 const THRESHOLD = 110
@@ -59,8 +59,7 @@ export default function Discover() {
       const r = await source.swipe(top.id, dir)
       setExitDir(dir)
       setDeck((d) => d.slice(1))
-      blip(dir === 'like' ? 640 : 330)
-      if (r.matched) { matchChime(); setMatch(top); bump() }
+      if (r.matched) { sfx.match(); setMatch(top); bump() } else if (dir === 'like') sfx.like(); else sfx.pass()
       return true
     } catch (e) {
       setNotice(e instanceof Error ? e.message : 'Swipe failed. Try again.')
@@ -96,7 +95,7 @@ export default function Discover() {
         <button aria-label="Pass" className="btn btn-ghost size-16 !p-0" disabled={!deck.length} onClick={() => void act('pass')}><X /></button>
         <button aria-label="Like" className="btn btn-primary size-16 !p-0" disabled={!deck.length} onClick={() => void act('like')}><Heart /></button>
       </div>
-      <p className="mt-3 text-center text-xs text-mute">Drag, or use ← → keys. A connection forms only when you both like each other.</p>
+      <p className="mt-3 text-center text-xs text-mute">Drag the card, or use ← → keys. A connection forms only when you both like each other.</p>
       <AnimatePresence>
         {match && me && <MatchOverlay mine={me.persona} theirs={match.persona} simulated={source.kind === 'demo'} onClose={() => setMatch(null)} onView={() => nav(`${base}/network`)} />}
       </AnimatePresence>

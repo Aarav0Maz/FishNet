@@ -1,9 +1,11 @@
 import type { Persona, RealIdentity, Tags } from '../types'
+import { canonicalTags } from '../lib/tags'
+import { TEMPLATES } from '../types'
 
 export interface SeedUser { id: string; persona: Persona; tags: Tags; real: RealIdentity }
 
 const T = (skills: string, interests: string, goals: string): Tags => ({
-  skills: skills.split('|'), interests: interests.split('|'), goals: goals.split('|'),
+  skills: canonicalTags(skills.split('|')), interests: canonicalTags(interests.split('|')), goals: canonicalTags(goals.split('|'), 'goal'),
 })
 
 // name | title | company | valuation | template | skills | interests | goals | real name | real role
@@ -37,7 +39,7 @@ const rows: [string, string, string, string, string, string, string, string, str
 const hue = (i: number) => 255 + ((i * 37) % 90)
 export const DEMO_USERS: SeedUser[] = rows.map((r, i) => ({
   id: `demo-${i + 1}`,
-  persona: { template: r[4], name: r[0], title: r[1], company: r[2], bio: `Fictional demo persona. ${r[1]} of ${r[2]}.`, valuation: r[3], hue: hue(i) },
+  persona: { template: r[4], name: r[0], title: r[1], company: r[2], bio: TEMPLATES[r[4]].bio, valuation: r[3], hue: hue(i) },
   tags: T(r[5], r[6], r[7]),
   real: { name: r[8], role: r[9], bio: 'Fictional demo identity, not a real person.', linkedin: '' },
 }))

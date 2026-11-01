@@ -5,6 +5,7 @@ import { useWorkspace } from '../workspace'
 import type { ChatMessage, Connection } from '../types'
 import { Avatar } from '../components/PersonaCard'
 import { conversationStarters } from '../lib/starters'
+import { sfx } from '../lib/sound'
 
 export default function Chat() {
   const { otherId = '' } = useParams()
@@ -31,8 +32,8 @@ export default function Chat() {
     const body = text.trim()
     if (!body || sending) return
     setSending(true); setErr('')
-    try { await source.sendMessage(otherId, body); setText(''); await load() }
-    catch (x) { setErr(x instanceof Error ? x.message : 'Could not send') }
+    try { await source.sendMessage(otherId, body); sfx.send(); setText(''); await load() }
+    catch (x) { sfx.error(); setErr(x instanceof Error ? x.message : 'Could not send') }
     finally { setSending(false) }
   }
 

@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useMemo, type ReactNode } from 'react'
 import { Navigate, Route, Routes, useNavigate } from 'react-router-dom'
 import { rollPersona } from './lib/persona'
+import { canonicalTags } from './lib/tags'
 import { TEMPLATE_KEYS } from './types'
 import { useAuth } from './auth'
 import { createDemoSource } from './data/demo'
@@ -31,7 +32,7 @@ function DemoStart() {
       const m = (await source.getMe()) ?? (await source.saveMe({
         persona: rollPersona(TEMPLATE_KEYS[Math.floor(Math.random() * TEMPLATE_KEYS.length)]),
         real: { name: 'Demo Visitor', role: 'Hackathon judge', bio: 'Fictional demo identity.', linkedin: '' },
-        tags: { skills: ['Strategy'], interests: ['AI', 'Climate', 'Design'], goals: ['Find cofounder'] },
+        tags: { skills: canonicalTags(['Strategy']), interests: canonicalTags(['AI', 'Climate', 'Design']), goals: canonicalTags(['Find cofounder'], 'goal') },
         settings: { discoverable: true, showInGraph: true },
       }))
       if (live) { setMe(m); nav(`${base}/discover`, { replace: true }) }
