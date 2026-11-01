@@ -31,7 +31,7 @@ export default function Network() {
   const path = useMemo(() => (graph && me && target ? shortestPath(graph.edges, me.id, target) : null), [graph, me, target])
   const sel = selected ? (selected.startsWith('rec:') ? null : byId.get(selected) ?? null) : null
   const selRec = selected?.startsWith('rec:') ? recs.find((r) => `rec:${r.id}` === selected) : undefined
-  const names = (ids: string[]) => ids.map((i) => byId.get(i)?.persona.name ?? '?')
+  const names = (ids: string[]) => ids.map((i) => { const n = byId.get(i); return n ? n.revealedName ?? n.persona.name : '?' })
 
   async function ask() {
     if (!path || path.length < 3 || busy) return
@@ -52,7 +52,7 @@ export default function Network() {
         <label className="sr-only" htmlFor="tgt">Find a route to</label>
         <select id="tgt" className="field !w-auto max-w-[60%] !py-2 text-sm" value={target ?? ''} onChange={(e) => { setTarget(e.target.value || null); setSelected(e.target.value || null); setMsg(null) }}>
           <option value="">Find a route to…</option>
-          {graph.nodes.filter((n) => n.degree > 0).map((n) => <option key={n.id} value={n.id}>{n.persona.name}{n.degree > 1 ? ` · ${n.degree} hops` : ''}</option>)}
+          {graph.nodes.filter((n) => n.degree > 0).map((n) => <option key={n.id} value={n.id}>{n.revealedName ?? n.persona.name}{n.degree > 1 ? ` · ${n.degree} hops` : ''}</option>)}
         </select>
         {target && <button className="btn btn-ghost !min-h-9 !py-1 text-sm" onClick={() => { setTarget(null); setMsg(null) }}>Clear</button>}
       </div>

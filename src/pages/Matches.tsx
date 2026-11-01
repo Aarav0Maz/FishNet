@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { ChevronDown } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { useWorkspace } from '../workspace'
@@ -14,6 +15,7 @@ export default function Matches() {
   const [list, setList] = useState<Connection[] | null>(null)
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState<string | null>(null)
+  const [openPersona, setOpenPersona] = useState<string | null>(null)
   const [replay, setReplay] = useState<string | null>(null)
   const [dismissed, setDismissed] = useState<Set<string>>(new Set())
 
@@ -51,10 +53,21 @@ export default function Matches() {
       <ul className="space-y-4">
         {list?.map((c) => (
           <motion.li key={c.id} layout initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl bg-surface p-5">
-            <div className="flex items-center gap-4">
-              <Avatar persona={c.persona} size={60} />
-              <div className="min-w-0 flex-1"><p className="display truncate text-xl">{c.persona.name}</p><p className="truncate text-sm text-lav">{c.persona.title}, {c.persona.company}</p><span className="fiction-tag mt-1 inline-block">Fictional persona</span></div>
-            </div>
+            {c.reveal === 'revealed' && c.identity ? (
+              <>
+                <div className="flex items-center gap-4">
+                  <Avatar persona={{ ...c.persona, name: c.identity.name }} size={60} />
+                  <div className="min-w-0 flex-1"><p className="display truncate text-xl">{c.identity.name}</p><p className="truncate text-sm text-lav">{c.identity.role}</p></div>
+                  <button aria-expanded={openPersona === c.id} aria-label="Show their persona" className="rounded-full p-2 text-mute hover:text-ink" onClick={() => setOpenPersona(openPersona === c.id ? null : c.id)}><ChevronDown className={`transition ${openPersona === c.id ? 'rotate-180' : ''}`} /></button>
+                </div>
+                {openPersona === c.id && <p className="mt-3 rounded-2xl bg-elevated p-3 text-sm text-mute"><span className="fiction-tag mr-2">Persona</span>{c.persona.name} · {c.persona.title}, {c.persona.company}</p>}
+              </>
+            ) : (
+              <div className="flex items-center gap-4">
+                <Avatar persona={c.persona} size={60} />
+                <div className="min-w-0 flex-1"><p className="display truncate text-xl">{c.persona.name}</p><p className="truncate text-sm text-lav">{c.persona.title}, {c.persona.company}</p><span className="fiction-tag mt-1 inline-block">Fictional persona</span></div>
+              </div>
+            )}
             <div className="mt-4">
               {c.reveal === 'revealed' ? <>
                 <RevealCard c={c} simulated={source.kind === 'demo'} onReplay={() => setReplay(c.id)} />

@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useWorkspace } from '../workspace'
 import type { IntroRequest, IntroStatus } from '../types'
+import { useRevealedNames } from '../lib/useRevealedNames'
 
 const label: Record<IntroStatus, string> = { pending_via: 'Waiting for the intermediary', pending_target: 'Waiting for the target to approve', completed: 'Introduction completed', declined: 'Declined' }
 
 export default function Intros() {
   const { source, version, bump } = useWorkspace()
+  const real = useRevealedNames()
   const [list, setList] = useState<IntroRequest[] | null>(null)
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState<string | null>(null)
@@ -30,7 +32,7 @@ export default function Intros() {
           const actionable = (r.myRole === 'via' && r.status === 'pending_via') || (r.myRole === 'target' && r.status === 'pending_target')
           return (
             <li key={r.id} className="rounded-3xl bg-surface p-5">
-              <p><span className="text-lav">{r.names.requester}</span> → <span className="text-lav">{r.names.via}</span> → <span className="text-lav">{r.names.target}</span></p>
+              <p><span className="text-lav">{real(r.names.requester)}</span> → <span className="text-lav">{real(r.names.via)}</span> → <span className="text-lav">{real(r.names.target)}</span></p>
               {r.note && <p className="mt-1 text-sm italic text-mute">“{r.note}”</p>}
               <p className={`mt-2 text-sm ${r.status === 'completed' ? 'text-lav' : r.status === 'declined' ? 'text-pinky' : 'text-mute'}`}>{label[r.status]} · you are the {r.myRole}</p>
               {actionable && <div className="mt-3 flex gap-2"><button className="btn btn-primary flex-1" disabled={busy === r.id} onClick={() => void respond(r.id, true)}>Accept</button><button className="btn btn-ghost flex-1" disabled={busy === r.id} onClick={() => void respond(r.id, false)}>Decline</button></div>}
