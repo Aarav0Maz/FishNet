@@ -17,7 +17,7 @@ type NData = { label: string; hue: number; degree: number; me: boolean; rec: boo
 type EData = { dim: boolean; onPath: boolean; rec: boolean }
 
 const FNode = memo(function FNode({ data }: NodeProps<Node<NData>>) {
-  const size = data.me ? 72 : data.degree === 1 ? 56 : 44
+  const size = data.me ? 76 : data.degree === 1 ? 60 : 48
   return (
     <div className="flex flex-col items-center gap-1 transition-opacity duration-500" style={{ opacity: data.dim ? 0.18 : 1 }}>
       <Handle type="target" position={Position.Top} style={{ opacity: 0, top: size / 2, left: '50%' }} isConnectable={false} />
@@ -28,7 +28,7 @@ const FNode = memo(function FNode({ data }: NodeProps<Node<NData>>) {
         boxShadow: data.onPath || data.selected || data.me ? '0 0 0 3px rgba(153,92,255,.9), 0 0 28px rgba(153,92,255,.7)' : 'none',
         opacity: data.rec ? 0.7 : 1,
       }}>{initials(data.label)}</div>
-      <span className="max-w-28 truncate text-center text-xs font-medium text-ink/90">{data.revealed ? `✦ ${data.label}` : data.label}</span>
+      <span className="max-w-28 truncate text-center text-[13px] font-medium text-ink/90">{data.revealed ? `✦ ${data.label}` : data.label}</span>
     </div>
   )
 })
@@ -42,10 +42,11 @@ const FEdge = memo(function FEdge({ id, sourceX, sourceY, targetX, targetY, data
 const nodeTypes = { fn: FNode }
 const edgeTypes = { fn: FEdge }
 
-function layout(nodes: GraphNode[], edges: [string, string][], recs: Candidate[]): Map<string, { x: number; y: number }> {
+function layout(nodes: GraphNode[], edges: [string, string][], recs: Candidate[], compact: boolean): Map<string, { x: number; y: number }> {
   const pos = new Map<string, { x: number; y: number }>()
   const ang = new Map<string, number>()
-  const R = [0, 200, 360, 510]
+  const R = compact ? [0, 150, 270, 380] : [0, 200, 360, 510]
+  const recR = compact ? 470 : 640
   const me = nodes.find((n) => n.degree === 0)
   if (me) pos.set(me.id, { x: 0, y: 0 })
   for (let d = 1; d <= 3; d++) {
@@ -64,7 +65,7 @@ function layout(nodes: GraphNode[], edges: [string, string][], recs: Candidate[]
       pos.set(n.id, { x: Math.cos(a) * R[d], y: Math.sin(a) * R[d] })
     })
   }
-  recs.forEach((r, i) => { const a = (i / Math.max(recs.length, 1)) * Math.PI * 2 + 0.3; pos.set(`rec:${r.id}`, { x: Math.cos(a) * 640, y: Math.sin(a) * 640 }) })
+  recs.forEach((r, i) => { const a = (i / Math.max(recs.length, 1)) * Math.PI * 2 + 0.3; pos.set(`rec:${r.id}`, { x: Math.cos(a) * recR, y: Math.sin(a) * recR }) })
   return pos
 }
 
@@ -76,7 +77,7 @@ function FitRoute({ path, count }: { path: string[] | null; count: number }) {  
     // wait a frame so nodes have left the origin before measuring
     const t = setTimeout(() => {
       if (path && path.length > 1) void rf.fitView({ nodes: path.map((id) => ({ id })), duration: 700, padding: 0.5 })
-      else void rf.fitView({ duration: 800, padding: 0.12 })
+      else void rf.fitView({ duration: 800, padding: 0.06 })
     }, 350)
     return () => clearTimeout(t)
   }, [path, rf, count])
@@ -84,7 +85,8 @@ function FitRoute({ path, count }: { path: string[] | null; count: number }) {  
 }
 
 export default function GraphCanvas({ graph, recs, meId, path, selected, focus, onSelect }: CanvasProps) {
-  const targets = useMemo(() => layout(graph.nodes, graph.edges, recs), [graph, recs])
+  const compact = typeof window !== 'undefined' && window.innerWidth < 640
+  const targets = useMemo(() => layout(graph.nodes, graph.edges, recs, compact), [graph, recs, compact])
   const [placed, setPlaced] = useState<Set<string>>(new Set())
 
   // New nodes start at the centre and glide out on the next frame (CSS transform transition).

@@ -78,7 +78,7 @@ export default function Network() {
   return (
     <div className="relative h-[calc(100vh-5.5rem)] md:h-full">
       <div className="absolute left-4 right-24 top-2 z-10 flex flex-wrap items-center gap-2 md:left-6 md:right-4">
-        <h1 className="display mr-2 text-2xl">Network</h1>
+        <h1 className="display mr-2 text-2xl">Quest map</h1>
         <label className="sr-only" htmlFor="tgt">Find a route to</label>
         <select id="tgt" className="field !w-auto max-w-[60%] !py-2 text-sm" value={target ?? ''} onChange={(e) => { setWalkRoute(null); setTarget(e.target.value || null); setSelected(null); setMsg(null) }}>
           <option value="">Find a route to…</option>

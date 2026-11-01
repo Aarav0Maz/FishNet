@@ -47,7 +47,7 @@ export default function Matches() {
   return (
     <div className="mx-auto max-w-2xl px-5 py-6">
       <h1 className="display mb-1 text-3xl">Matches</h1>
-      <p className="mb-6 text-sm text-mute">People you matched with. Real identities stay hidden until you both choose to reveal.</p>
+      <p className="mb-6 text-sm text-mute">People you matched with. Real identities stay hidden until you both choose to reveal. Pressing <span className="text-lav">Reveal myself</span> nudges them to do the same; nothing shows until you both have.</p>
       {err && <p role="alert" className="mb-4 text-sm text-pinky">{err} <button className="underline" onClick={() => void load()}>Retry</button></p>}
       {list?.length === 0 && <div className="grid justify-items-center gap-3 py-16 text-center"><Mascot size={120} mood="sleepy" /><p className="display text-2xl">No matches yet</p><button className="btn btn-primary" onClick={() => nav(`${base}/discover`)}>Start swiping</button></div>}
       <ul className="space-y-4">
@@ -76,8 +76,7 @@ export default function Matches() {
                 <button className="mt-3 text-xs text-mute underline" disabled={busy === c.id} onClick={() => void reveal(c, false)}>Hide again (withdraws your consent for both of you)</button>
               </> : c.reveal === 'none' ? (
                 <div className="space-y-2">
-                  <button className="btn btn-primary w-full" disabled={busy === c.id} onClick={() => void reveal(c, true)}>Reveal myself</button>
-                  <p className="text-center text-xs text-mute">They get a nudge to reveal too. Nothing is shown until you both press it.</p>
+                  <button className="btn btn-ghost w-full border border-accent/40 text-lav hover:bg-accent/15" disabled={busy === c.id} onClick={() => void reveal(c, true)}>Reveal myself</button>
                 </div>
               ) : c.reveal === 'requested_by_me' ? (
                 <div className="flex items-center justify-between rounded-2xl bg-elevated px-4 py-3 text-sm">
