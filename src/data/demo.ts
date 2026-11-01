@@ -15,6 +15,7 @@ export function createDemoSource(): DataSource {
   for (const i of DEMO_START_CONNECTIONS) edges.push([DEMO_ME, DEMO_USERS[i].id])
   const swiped = new Set<string>()
   let likes = 0
+  const session = Math.random().toString(36).slice(2, 7) // keeps per-connection "already celebrated" flags from leaking between demo runs
   const reveal = new Map<string, RevealState>()
   let intros: IntroRequest[] = []
   let notices: Notice[] = []
@@ -61,7 +62,7 @@ export function createDemoSource(): DataSource {
       return myConns().map((oid): Connection => {
         const u = byId.get(oid)!
         const st = reveal.get(oid) ?? 'none'
-        return { id: `c-${oid}`, otherId: oid, persona: u.persona, tags: u.tags, since: new Date().toISOString(), reveal: st, identity: st === 'revealed' ? u.real : undefined }
+        return { id: `c-${oid}-${session}`, otherId: oid, persona: u.persona, tags: u.tags, since: new Date().toISOString(), reveal: st, identity: st === 'revealed' ? u.real : undefined }
       })
     },
     async graph(): Promise<GraphData> {
