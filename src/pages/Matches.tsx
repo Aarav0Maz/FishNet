@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, MessageCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'motion/react'
 import { useWorkspace } from '../workspace'
@@ -68,7 +68,8 @@ export default function Matches() {
                 <div className="min-w-0 flex-1"><p className="display truncate text-xl">{c.persona.name}</p><p className="truncate text-sm text-lav">{c.persona.title}, {c.persona.company}</p><span className="fiction-tag mt-1 inline-block">Fictional persona</span></div>
               </div>
             )}
-            <div className="mt-4">
+            <button className="btn btn-ghost mt-4 w-full" onClick={() => nav(`${base}/chat/${c.otherId}`)}><MessageCircle size={16} />Message</button>
+            <div className="mt-3">
               {c.reveal === 'revealed' ? <>
                 <RevealCard c={c} simulated={source.kind === 'demo'} onReplay={() => setReplay(c.id)} />
                 <button className="mt-3 text-xs text-mute underline" disabled={busy === c.id} onClick={() => void reveal(c, false)}>Hide again (withdraws your consent for both of you)</button>

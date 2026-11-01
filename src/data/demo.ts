@@ -1,5 +1,5 @@
 import { matchScore } from '../lib/graph'
-import type { Candidate, Connection, DataSource, GraphData, IntroRequest, MyProfile, MyProfileInput, Notice, NoticeKind, RevealState } from '../types'
+import type { Candidate, ChatMessage, Connection, DataSource, GraphData, IntroRequest, MyProfile, MyProfileInput, Notice, NoticeKind, RevealState } from '../types'
 import { DEMO_EDGES, DEMO_START_CONNECTIONS, DEMO_USERS } from './demoSeed'
 
 export const DEMO_ME = 'demo-me'
@@ -18,6 +18,8 @@ export function createDemoSource(): DataSource {
   const reveal = new Map<string, RevealState>()
   let intros: IntroRequest[] = []
   let notices: Notice[] = []
+  const chats = new Map<string, ChatMessage[]>()
+  const replies = ['Ha, bold opener. I respect it.', 'Honestly? Mostly confidence and a very good slide deck.', 'Love that. Tell me more about what you are building.', 'Let us compare notes. Coffee, virtually?']
   const listeners = new Set<() => void>()
   const emit = () => listeners.forEach((l) => l())
   const notify = (kind: NoticeKind, name: string) => { notices = [{ id: nid('n'), kind, name, read: false, createdAt: new Date().toISOString(), simulated: true }, ...notices]; emit() }
@@ -113,6 +115,16 @@ export function createDemoSource(): DataSource {
       reveal.set(otherId, 'requested_by_me')
       emit()
       later(() => { reveal.set(otherId, 'revealed'); notify('reveal_approved', nameOf(otherId)) }, 2200)
+    },
+    async messages(otherId) { return chats.get(otherId) ?? [] },
+    async sendMessage(otherId, body) {
+      if (!connected(DEMO_ME, otherId)) throw new Error('Not connected')
+      const text = body.trim()
+      if (!text) throw new Error('Message is empty')
+      const add = (mine: boolean, b: string) => { chats.set(otherId, [...(chats.get(otherId) ?? []), { id: nid('m'), mine, body: b, createdAt: new Date().toISOString() }]); emit() }
+      add(true, text)
+      // Simulated reply; the demo has no real people on the other end.
+      later(() => { add(false, replies[(chats.get(otherId)?.length ?? 0) % replies.length]); notify('message', nameOf(otherId)) }, 1400)
     },
     async notices() { return notices },
     async markNoticesRead() { notices = notices.map((n) => ({ ...n, read: true })); emit() },

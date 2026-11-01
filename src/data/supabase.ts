@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import type { Candidate, Connection, DataSource, GraphData, IntroRequest, MyProfile, MyProfileInput, Notice, Persona, Tags } from '../types'
+import type { ChatMessage, Candidate, Connection, DataSource, GraphData, IntroRequest, MyProfile, MyProfileInput, Notice, Persona, Tags } from '../types'
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
@@ -66,6 +66,8 @@ export function createLiveSource(userId: string): DataSource {
     async requestIntro(viaId, targetId, note) { check(await db().rpc('request_intro', { p_via: viaId, p_target: targetId, p_note: note })) },
     async respondIntro(id, accept) { check(await db().rpc('respond_intro', { p_id: id, p_accept: accept })) },
     async setReveal(otherId, consent) { check(await db().rpc('set_reveal', { p_other: otherId, p_consent: consent })) },
+    async messages(otherId) { return check(await db().rpc('get_messages', { p_other: otherId })) as ChatMessage[] },
+    async sendMessage(otherId, body) { check(await db().rpc('send_message', { p_other: otherId, p_body: body })) },
     async notices() {
       const rows = check(await db().from('notifications').select('id,kind,actor_name,read,created_at').order('created_at', { ascending: false }).limit(50))
       return (rows ?? []).map((r): Notice => ({ id: r.id, kind: r.kind, name: r.actor_name, read: r.read, createdAt: r.created_at }))
@@ -73,7 +75,10 @@ export function createLiveSource(userId: string): DataSource {
     async markNoticesRead() { check(await db().from('notifications').update({ read: true }).eq('user_id', userId).eq('read', false)) },
     subscribe(cb) {
       const c = db()
-      const ch = c.channel(`n-${userId}`).on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` }, cb).subscribe()
+      const ch = c.channel(`n-${userId}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` }, cb)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, cb) // RLS limits delivery to the two participants
+        .subscribe()
       return () => { void c.removeChannel(ch) }
     },
   }

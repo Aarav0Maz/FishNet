@@ -36,6 +36,7 @@ beforeAll(async () => {
     create publication supabase_realtime;`)
   await db.exec(readFileSync(new URL('./migrations/0001_fishnet.sql', import.meta.url), 'utf8'))
   await db.exec(readFileSync(new URL('./migrations/0002_jobs.sql', import.meta.url), 'utf8'))
+  await db.exec(readFileSync(new URL('./migrations/0003_messages.sql', import.meta.url), 'utf8'))
   await db.exec('grant usage on schema public to anon, authenticated, service_role')
   await signup(A, 'A', [['design'], ['ai', 'climate'], ['cofounder']])
   await signup(B, 'B', [['ai'], ['design'], ['cofounder']])
@@ -143,5 +144,28 @@ describe('Render Workflows job functions', () => {
     await db.exec('reset role')
     const st = (await db.query<{ status: string }>('select status from intro_requests order by created_at')).rows.map((r) => r.status)
     expect(st).toEqual(['expired', 'pending_via'])
+  })
+})
+
+describe('Masked chat', () => {
+  it('matched users can exchange messages; order and ownership are right', async () => {
+    await rpc(A, 'select send_message($1,$2)', [B, 'hello from A'])
+    await rpc(B, 'select send_message($1,$2)', [A, 'hello back'])
+    const a = (await rpc<{ get_messages: { mine: boolean; body: string }[] }>(A, 'select get_messages($1)', [B]))[0].get_messages
+    expect(a.map((m) => [m.mine, m.body])).toEqual([[true, 'hello from A'], [false, 'hello back']])
+  })
+  it('sends one unread notification per sender, not one per message', async () => {
+    await rpc(A, 'select send_message($1,$2)', [B, 'again'])
+    const n = (await rpc<{ n: number }>(B, "select count(*)::int n from notifications where kind='message'"))[0].n
+    expect(n).toBe(1)
+  })
+  it('outsiders cannot read or send, and empty messages are rejected', async () => {
+    expect((await rpc(D, 'select * from messages')).length).toBe(0)
+    await expect(rpc(D, 'select get_messages($1)', [A])).rejects.toThrow()
+    await expect(rpc(D, 'select send_message($1,$2)', [A, 'sneaky'])).rejects.toThrow()
+    await expect(rpc(A, 'select send_message($1,$2)', [B, '   '])).rejects.toThrow()
+  })
+  it('rate limits bursts', async () => {
+    await expect((async () => { for (let i = 0; i < 40; i++) await rpc(A, 'select send_message($1,$2)', [B, `spam ${i}`]) })()).rejects.toThrow(/slow down/)
   })
 })

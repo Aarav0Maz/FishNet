@@ -11,6 +11,7 @@ const text: Record<NoticeKind, (n: string) => string> = {
   intro_declined: (n) => `${n} declined an introduction`,
   reveal_request: (n) => `${n} wants a reality reveal`,
   reveal_approved: (n) => `Reality reveal with ${n} is confirmed`,
+  message: (n) => `${n} sent you a message`,
   digest: (n) => `${n} ${n === '1' ? 'person matches' : 'people match'} your interests. Go swipe!`,
   intro_expired: (n) => `Your introduction via ${n} expired with no answer`,
 }

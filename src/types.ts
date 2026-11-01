@@ -15,7 +15,8 @@ export interface IntroRequest {
   names: { requester: string; via: string; target: string }
   myRole: 'requester' | 'via' | 'target'
 }
-export type NoticeKind = 'match' | 'intro_request' | 'intro_accepted' | 'intro_declined' | 'intro_forwarded' | 'reveal_request' | 'reveal_approved' | 'digest' | 'intro_expired'
+export interface ChatMessage { id: string; mine: boolean; body: string; createdAt: string }
+export type NoticeKind = 'match' | 'intro_request' | 'intro_accepted' | 'intro_declined' | 'intro_forwarded' | 'reveal_request' | 'reveal_approved' | 'digest' | 'intro_expired' | 'message'
 export interface Notice { id: string; kind: NoticeKind; name: string; read: boolean; createdAt: string; simulated?: boolean }
 
 export interface DataSource {
@@ -31,6 +32,8 @@ export interface DataSource {
   requestIntro(viaId: string, targetId: string, note: string): Promise<void>
   respondIntro(id: string, accept: boolean): Promise<void>
   setReveal(otherId: string, consent: boolean): Promise<void>
+  messages(otherId: string): Promise<ChatMessage[]>
+  sendMessage(otherId: string, body: string): Promise<void>
   notices(): Promise<Notice[]>
   markNoticesRead(): Promise<void>
   subscribe?(cb: () => void): () => void

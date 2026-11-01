@@ -39,6 +39,7 @@ Legend: ✅ built and verified · 🟡 built, verified only in part · ⛔ not y
 | Supabase Auth login, session restore after reload | ✅ | Live on Render: signed in, reloaded, stayed signed in |
 | Live two-user flow on Render (match → graph → intro → reveal) | ✅ | Run by hand 2026-11-01: real match, 2-hop route from confirmed edges, intro completed after both approvals, one-button mutual reveal released real name/role/bio/LinkedIn only after both pressed |
 | Render deployment | ✅ | https://fishnet-0crx.onrender.com, SPA rewrite fixed, auto-deploys from `main` |
+| Masked chat + conversation starters | 🟡 | Demo walked in browser; SQL-tested (RLS, rate limit, outsiders blocked). Needs `0003_messages.sql` applied, live two-user check pending |
 | Mascot | 🟡 | Vector placeholder; swap in your art if you have it |
 
 ## Background jobs

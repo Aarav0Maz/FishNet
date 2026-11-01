@@ -9,7 +9,7 @@ export function Shell() {
   const { base, source, unread, me } = useWorkspace()
   const nav = useNavigate()
   const { pathname } = useLocation()
-  const hint = ({ discover: 'Swipe right (→) to match', network: 'Pick a far target to see the route', matches: 'Request a reality reveal', intros: 'Responses arrive in a few seconds', inbox: 'Alerts appear as things happen' } as Record<string, string>)[pathname.split('/')[2] ?? ''] ?? ''
+  const hint = ({ discover: 'Swipe right (→) to match', network: 'Pick a far target to see the route', matches: 'Message a match, then reveal', intros: 'Responses arrive in a few seconds', inbox: 'Alerts appear as things happen' } as Record<string, string>)[pathname.split('/')[2] ?? ''] ?? ''
   const [snd, setSnd] = useState(soundEnabled())
   const items = [
     { to: 'discover', icon: Compass, label: 'Discover' },

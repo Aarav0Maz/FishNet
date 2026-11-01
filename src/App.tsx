@@ -14,6 +14,7 @@ import Discover from './pages/Discover'
 import Matches from './pages/Matches'
 import Intros from './pages/Intros'
 import Inbox from './pages/Inbox'
+import Chat from './pages/Chat'
 
 const Network = lazy(() => import('./pages/Network'))
 const Loading = () => <div className="grid h-full place-items-center text-mute" role="status">Loading…</div>
@@ -61,6 +62,7 @@ function WorkspaceRoutes() {
           <Route path="matches" element={<Matches />} />
           <Route path="intros" element={<Intros />} />
           <Route path="inbox" element={<Inbox />} />
+          <Route path="chat/:otherId" element={<Chat />} />
         </Route>
         <Route path="*" element={<Navigate to={me ? `${base}/discover` : entry(base)} replace />} />
       </Routes>
