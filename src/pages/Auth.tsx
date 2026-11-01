@@ -21,7 +21,13 @@ export default function Auth() {
     setBusy(true); setMsg(null)
     const r = mode === 'signup' ? await supabase.auth.signUp({ email, password }) : await supabase.auth.signInWithPassword({ email, password })
     setBusy(false)
-    if (r.error) return setMsg({ ok: false, text: r.error.message })
+    if (r.error) {
+      const m = r.error.message
+      const text = /rate limit/i.test(m) ? 'Sign-up emails are rate-limited right now. Please try again in a few minutes, or try the demo meanwhile.'
+        : /invalid login/i.test(m) ? 'That email and password do not match. Check them and try again.'
+        : /already registered/i.test(m) ? 'That email already has an account. Try logging in.' : m
+      return setMsg({ ok: false, text })
+    }
     if (mode === 'signup' && !r.data.session) return setMsg({ ok: true, text: 'Check your email to confirm your account, then log in.' })
     nav('/app')
   }
@@ -36,7 +42,7 @@ export default function Auth() {
         {msg && <p role="alert" className={`text-sm ${msg.ok ? 'text-lav' : 'text-pinky'}`}>{msg.text}</p>}
         <button className="btn btn-primary w-full" disabled={busy || !liveConfigured}>{busy ? 'One moment…' : mode === 'signup' ? 'Create account' : 'Log in'}</button>
       </form>
-      <button className="text-sm text-mute hover:text-ink" onClick={() => { setMode(mode === 'signup' ? 'login' : 'signup'); setMsg(null) }}>
+      <button className="min-h-11 text-sm text-mute hover:text-ink" onClick={() => { setMode(mode === 'signup' ? 'login' : 'signup'); setMsg(null) }}>
         {mode === 'signup' ? 'Already have an account? Log in' : 'New here? Create an account'}
       </button>
     </div>

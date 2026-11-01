@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { motion, useReducedMotion } from 'motion/react'
+import { useEffect } from 'react'
 import { Bell, Compass, Handshake, Network, Send, LogOut, Settings as Gear } from 'lucide-react'
 import { useWorkspace } from '../workspace'
 import { SoundToggle } from './SoundToggle'
@@ -11,10 +12,12 @@ export function Shell() {
   const nav = useNavigate()
   const { pathname } = useLocation()
   const reduce = useReducedMotion()
+  const section = pathname.split('/')[2] ?? ''
+  useEffect(() => { const t = ({ discover: 'Encounters', network: 'Quest map', matches: 'Matches', intros: 'Introductions', inbox: 'Alerts', chat: 'Chat', settings: 'Settings' } as Record<string, string>)[section]; document.title = t ? `${t} · FishNet` : 'FishNet' }, [section])
   const hint = ({ discover: 'Swipe right (→) to match', network: 'Pick a far target to start a quest', matches: 'Message a match, then reveal', intros: 'Responses arrive in a few seconds', inbox: 'Alerts appear as things happen' } as Record<string, string>)[pathname.split('/')[2] ?? ''] ?? ''
   const items = [
-    { to: 'discover', icon: Compass, label: 'Discover' },
-    { to: 'network', icon: Network, label: 'Network' },
+    { to: 'discover', icon: Compass, label: 'Encounters' },
+    { to: 'network', icon: Network, label: 'Quest map' },
     { to: 'matches', icon: Handshake, label: 'Matches' },
     { to: 'intros', icon: Send, label: 'Intros' },
     { to: 'inbox', icon: Bell, label: 'Alerts', badge: unread },

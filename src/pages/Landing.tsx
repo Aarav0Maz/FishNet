@@ -9,7 +9,7 @@ export default function Landing() {
   return (
     <div className="relative mx-auto flex min-h-full max-w-5xl flex-col px-6 py-8">
       <header className="flex items-center justify-between"><span className="display text-2xl">Fish<span className="text-accent">Net</span></span>
-        <Link to="/auth" className="text-sm text-mute hover:text-ink">{session ? 'Open app' : 'Log in'}</Link></header>
+        <Link to="/auth" className="inline-flex min-h-11 items-center px-2 text-sm text-mute hover:text-ink">{session ? 'Open app' : 'Log in'}</Link></header>
       <section className="grid flex-1 items-center gap-10 py-12 md:grid-cols-2">
         <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .8, ease: [.22, 1, .36, 1] }}>
           <h1 className="display text-5xl leading-[1.05] md:text-7xl">Come for the <em className="text-lav">fake status.</em><br />Leave with <em className="text-pinky">real connections.</em></h1>
