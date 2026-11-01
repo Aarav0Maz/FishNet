@@ -1,7 +1,7 @@
 export interface Persona { template: string; name: string; title: string; company: string; bio: string; valuation: string; hue: number }
 export interface Tags { skills: string[]; interests: string[]; goals: string[] }
 export interface RealIdentity { name: string; role: string; bio: string; linkedin: string }
-export interface Settings { discoverable: boolean; showInGraph: boolean }
+export interface Settings { discoverable: boolean; showInGraph: boolean; party: string }
 export interface MyProfile { id: string; real: RealIdentity; tags: Tags; settings: Settings; persona: Persona }
 export type MyProfileInput = Omit<MyProfile, 'id'>
 export interface Candidate { id: string; persona: Persona; tags: Tags; score: number }

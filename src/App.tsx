@@ -16,6 +16,7 @@ import Matches from './pages/Matches'
 import Intros from './pages/Intros'
 import Inbox from './pages/Inbox'
 import Chat from './pages/Chat'
+import Settings from './pages/Settings'
 
 const Network = lazy(() => import('./pages/Network'))
 const Loading = () => <div className="grid h-full place-items-center text-mute" role="status">Loading…</div>
@@ -33,7 +34,7 @@ function DemoStart() {
         persona: rollPersona(TEMPLATE_KEYS[Math.floor(Math.random() * TEMPLATE_KEYS.length)]),
         real: { name: 'Demo Visitor', role: 'Hackathon judge', bio: 'Fictional demo identity.', linkedin: '' },
         tags: { skills: canonicalTags(['Strategy']), interests: canonicalTags(['AI', 'Climate', 'Design']), goals: canonicalTags(['Find cofounder'], 'goal') },
-        settings: { discoverable: true, showInGraph: true },
+        settings: { discoverable: true, showInGraph: true, party: '' },
       }))
       if (live) { setMe(m); nav(`${base}/discover`, { replace: true }) }
     })()
@@ -64,6 +65,7 @@ function WorkspaceRoutes() {
           <Route path="intros" element={<Intros />} />
           <Route path="inbox" element={<Inbox />} />
           <Route path="chat/:otherId" element={<Chat />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
         <Route path="*" element={<Navigate to={me ? `${base}/discover` : entry(base)} replace />} />
       </Routes>

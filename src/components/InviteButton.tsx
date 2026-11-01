@@ -8,7 +8,8 @@ export function InviteButton({ className = 'btn btn-ghost', label = 'Invite your
   const { me } = useWorkspace()
   const [done, setDone] = useState(false)
   async function invite() {
-    const url = window.location.origin
+    const party = me?.settings.party
+    const url = party ? `${window.location.origin}/?party=${encodeURIComponent(party)}` : window.location.origin
     const text = `I'm ${me ? `${me.persona.name}, ${me.persona.title}` : 'a fictional founder'} on FishNet. Come find out who you'd be.`
     try {
       if (navigator.share) await navigator.share({ title: 'FishNet', text, url })

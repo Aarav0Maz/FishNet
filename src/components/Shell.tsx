@@ -1,6 +1,6 @@
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { motion, useReducedMotion } from 'motion/react'
-import { Bell, Compass, Handshake, Network, Send, LogOut, Pencil } from 'lucide-react'
+import { Bell, Compass, Handshake, Network, Send, LogOut, Settings as Gear } from 'lucide-react'
 import { useWorkspace } from '../workspace'
 import { SoundToggle } from './SoundToggle'
 import { InviteButton } from './InviteButton'
@@ -28,7 +28,7 @@ export function Shell() {
           DEMO MODE · simulated, nothing saved{hint && <span className="hidden sm:inline"> · {hint}</span>}
         </div>
       )}
-      <div className="fixed right-3 top-9 z-40 md:hidden"><SoundToggle compact /></div>
+      <div className="fixed right-3 top-9 z-40 flex gap-2 md:hidden"><SoundToggle compact /><NavLink to={`${base}/settings`} aria-label="Settings" className="grid size-10 place-items-center rounded-full border border-white/10 bg-surface/90 text-mute transition active:scale-90"><Gear size={18} /></NavLink></div>
       <aside className="hidden w-60 shrink-0 flex-col border-r border-white/5 p-5 pt-10 md:flex">
         <span className="display mb-8 text-2xl">Fish<span className="text-accent">Net</span></span>
         <nav className="flex flex-col gap-1">
@@ -36,7 +36,7 @@ export function Shell() {
         </nav>
         <div className="mt-auto space-y-2 text-sm text-mute">
           {me && <p className="truncate px-4" title="Your fictional persona">Playing: {me.persona.name}</p>}
-          <button className="flex items-center gap-3 px-4 py-2 hover:text-ink" onClick={() => nav(`${base}/onboarding`)}><Pencil size={16} />Edit persona</button>
+          <NavLink to={`${base}/settings`} className={({ isActive }) => `flex items-center gap-3 rounded-2xl px-4 py-2.5 text-sm transition hover:bg-elevated/60 hover:text-ink ${isActive ? 'bg-elevated text-ink' : ''}`}><Gear size={16} />Settings</NavLink>
           <SoundToggle />
           <InviteButton className="flex w-full items-center gap-3 rounded-2xl px-4 py-2.5 text-sm text-mute transition hover:bg-elevated/60 hover:text-ink" />
           <button className="flex items-center gap-3 px-4 py-2 hover:text-ink" onClick={async () => { if (supabase && source.kind === 'live') await supabase.auth.signOut(); nav('/') }}>

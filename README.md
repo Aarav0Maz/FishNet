@@ -40,6 +40,7 @@ Legend: ✅ built and verified · 🟡 built, verified only in part · ⛔ not y
 | Live two-user flow on Render (match → graph → intro → reveal) | ✅ | Run by hand 2026-11-01: real match, 2-hop route from confirmed edges, intro completed after both approvals, one-button mutual reveal released real name/role/bio/LinkedIn only after both pressed |
 | Render deployment | ✅ | https://fishnet-0crx.onrender.com, SPA rewrite fixed, auto-deploys from `main` |
 | Take-this-path walkthrough (message each stop, ask the previous stop to introduce the next; completed intro creates a connection) | ✅ | Live on Render 2026-11-01: A → intermediary → target intro completed, new A–target connection created, reveal then worked on it. Panel auto-switching to Message not watched live |
+| Party codes + Settings page | 🟡 | SQL-tested (filtering, validation); demo walked in browser; live needs `0006_party.sql` applied and an A/B check |
 | Masked chat + conversation starters | ✅ | Live on Render 2026-11-01: A and B exchanged messages, both persisted, alert delivered; SQL-tested for RLS, outsiders, rate limit |
 | Mascot | 🟡 | Vector placeholder; swap in your art if you have it |
 

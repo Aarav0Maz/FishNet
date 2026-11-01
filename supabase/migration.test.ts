@@ -38,6 +38,7 @@ beforeAll(async () => {
   await db.exec(readFileSync(new URL('./migrations/0002_jobs.sql', import.meta.url), 'utf8'))
   await db.exec(readFileSync(new URL('./migrations/0003_messages.sql', import.meta.url), 'utf8'))
   await db.exec(readFileSync(new URL('./migrations/0004_intro_connects.sql', import.meta.url), 'utf8'))
+  await db.exec(readFileSync(new URL('./migrations/0006_party.sql', import.meta.url), 'utf8'))
   await db.exec('grant usage on schema public to anon, authenticated, service_role')
   await signup(A, 'A', [['design'], ['ai', 'climate'], ['cofounder']])
   await signup(B, 'B', [['ai'], ['design'], ['cofounder']])
@@ -170,5 +171,22 @@ describe('Masked chat', () => {
   })
   it('rate limits bursts', async () => {
     await expect((async () => { for (let i = 0; i < 40; i++) await rpc(A, 'select send_message($1,$2)', [B, `spam ${i}`]) })()).rejects.toThrow(/slow down/)
+  })
+})
+
+describe('Party codes', () => {
+  const E = '00000000-0000-0000-0000-0000000000e1', F = '00000000-0000-0000-0000-0000000000e2', G = '00000000-0000-0000-0000-0000000000e3'
+  it('only shows people in the same party, and everyone when no party is set', async () => {
+    await signup(E, 'E', [['x'], ['ai'], []]); await signup(F, 'F', [['x'], ['ai'], []]); await signup(G, 'G', [['x'], ['ai'], []])
+    await db.exec('reset role')
+    await db.query("update profiles set party='larphacks' where id in ($1,$2)", [E, F])
+    await db.query("update profiles set party='other' where id = $1", [G])
+    expect((await rpc<{ user_id: string }>(E, 'select * from discover_page(30,0)')).map((r) => r.user_id)).toEqual([F])
+    const all = (await rpc<{ user_id: string }>(D, 'select * from discover_page(30,0)')).map((r) => r.user_id)
+    expect(all).toEqual(expect.arrayContaining([E, F, G]))
+  })
+  it('rejects malformed codes', async () => {
+    await db.exec('reset role')
+    await expect(db.query("update profiles set party='Bad Code!' where id = $1", [E])).rejects.toThrow()
   })
 })

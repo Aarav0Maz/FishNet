@@ -46,7 +46,7 @@ export default function Chat() {
 
   return (
     <div className="mx-auto flex h-[calc(100dvh-8.5rem)] max-w-2xl flex-col px-4 md:h-full md:py-4">
-      <header className="flex items-center gap-3 pb-3 pr-12 md:pr-0">
+      <header className="flex items-center gap-3 pb-3 pr-24 md:pr-0">
         <button aria-label="Back to matches" className="rounded-full p-2 text-mute hover:text-ink" onClick={() => nav(`${base}/matches`)}><ArrowLeft /></button>
         <Avatar persona={{ ...conn.persona, name }} size={44} />
         <div className="min-w-0"><p className="display truncate text-lg">{name}</p><p className="truncate text-xs text-mute">{revealed ? conn.identity!.role : 'Masked · talking to their fictional persona'}</p></div>

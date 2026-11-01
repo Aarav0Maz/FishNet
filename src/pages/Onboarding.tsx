@@ -6,6 +6,7 @@ import { canonicalTags, GOAL_OPTIONS, INTEREST_OPTIONS } from '../lib/tags'
 import { TagPicker } from '../components/TagPicker'
 import { TEMPLATES, TEMPLATE_KEYS, type MyProfileInput } from '../types'
 import { rollPersona } from '../lib/persona'
+import { invitedParty, normalizeParty, validParty } from '../lib/party'
 import { Dices } from 'lucide-react'
 import { Mascot } from '../components/Mascot'
 import { PersonaCard } from '../components/PersonaCard'
@@ -24,7 +25,7 @@ export default function Onboarding() {
   const [goals, setGoals] = useState<string[]>(me?.tags.goals ?? [])
   const [tpl, setTpl] = useState(me?.persona.template ?? 'billionaire')
   const [persona, setPersona] = useState(me?.persona ?? rollPersona('billionaire'))
-  const [settings, setSettings] = useState(me?.settings ?? { discoverable: true, showInGraph: true })
+  const [settings, setSettings] = useState(me?.settings ?? { discoverable: true, showInGraph: true, party: invitedParty() })
 
   const pick = (k: string) => { setTpl(k); setPersona(rollPersona(k, persona.hue)) }
   const canNext = step === 1 ? real.name.trim() && interests.length > 0 : step === 0 ? persona.name.trim() && persona.title.trim() && persona.company.trim() : true
@@ -33,6 +34,7 @@ export default function Onboarding() {
     if (busy) return
     setBusy(true); setErr('')
     try {
+      if (!validParty(settings.party)) throw new Error('Party code must be 2 to 24 letters, numbers or dashes')
       if (real.linkedin && !/^https?:\/\/([\w-]+\.)?linkedin\.com\//i.test(real.linkedin)) throw new Error('LinkedIn URL must start with https://linkedin.com/')
       const input: MyProfileInput = { real, tags: { skills: canonicalTags(skills), interests: canonicalTags(interests), goals: canonicalTags(goals, 'goal') }, settings, persona }
       setMe(await source.saveMe(input))
@@ -84,6 +86,8 @@ export default function Onboarding() {
           {step === 2 && <>
             <Toggle label="Show me in Discover" hint="Others can swipe on your persona. Required to be matched." on={settings.discoverable} set={(v) => setSettings({ ...settings, discoverable: v })} />
             <Toggle label="Show me on friends-of-friends maps" hint="Lets connections of your connections see your persona in their network graph." on={settings.showInGraph} set={(v) => setSettings({ ...settings, showInGraph: v })} />
+            <F label="Party code (optional)"><input className="field" placeholder="e.g. larphacks" maxLength={24} value={settings.party} onChange={(e) => setSettings({ ...settings, party: normalizeParty(e.target.value) })} /></F>
+            <p className="text-xs text-mute">Only meet people with the same code, for an event or community. Leave empty to meet everyone.</p>
             <p className="text-sm text-mute">Your real name, role, bio and LinkedIn are never shown unless you and a connection both approve a reveal.</p>
           </>}
         </motion.div>

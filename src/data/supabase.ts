@@ -42,13 +42,13 @@ export function createLiveSource(userId: string): DataSource {
         id: userId,
         real: { name: real.real_name, role: real.role, bio: real.bio, linkedin: real.linkedin_url },
         tags: { skills: prof.skills, interests: prof.interests, goals: prof.goals },
-        settings: { discoverable: prof.discoverable, showInGraph: prof.show_in_graph },
+        settings: { discoverable: prof.discoverable, showInGraph: prof.show_in_graph, party: prof.party ?? '' },
         persona: { template: persona.template, name: persona.name, title: persona.title, company: persona.company, bio: persona.bio, valuation: persona.valuation, hue: persona.hue },
       } satisfies MyProfile
     },
     async saveMe(p: MyProfileInput) {
       const c = db()
-      check(await c.from('profiles').upsert({ id: userId, skills: p.tags.skills, interests: p.tags.interests, goals: p.tags.goals, discoverable: p.settings.discoverable, show_in_graph: p.settings.showInGraph }))
+      check(await c.from('profiles').upsert({ id: userId, skills: p.tags.skills, interests: p.tags.interests, goals: p.tags.goals, discoverable: p.settings.discoverable, show_in_graph: p.settings.showInGraph, party: p.settings.party || null }))
       check(await c.from('personas').upsert({ user_id: userId, template: p.persona.template, name: p.persona.name, title: p.persona.title, company: p.persona.company, bio: p.persona.bio, valuation: p.persona.valuation, hue: p.persona.hue }))
       check(await c.from('private_identity').upsert({ user_id: userId, real_name: p.real.name, role: p.real.role, bio: p.real.bio, linkedin_url: p.real.linkedin }))
       return { id: userId, ...p }
